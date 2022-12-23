@@ -1,0 +1,29 @@
+# Eclipse
+.classpath
+.project
+.settings/
+/bin/
+.cache-main
+.cache-tests
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+# Intellij
+*.iml
+.idea/
+/.metadata/
+
+# Other
+tmp
+*-local.*
+*TestLocal.*
+.hprof
+**/test/resources/*Test
+
+**/.gradle
+build
