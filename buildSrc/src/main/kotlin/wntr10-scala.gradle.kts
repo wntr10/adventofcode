@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("org.scala-lang:scala-library:2.12.17")
+    implementation("org.scala-lang:scala3-library_3:3.2.1")
 }
 
 tasks.withType<ScalaCompile>() {
