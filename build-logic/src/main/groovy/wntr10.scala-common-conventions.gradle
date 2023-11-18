@@ -1,0 +1,23 @@
+plugins {
+    id 'scala'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    constraints {
+        implementation 'org.scala-lang:scala-library:2.13.12'
+    }
+
+    implementation 'org.scala-lang:scala-library'
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter('5.10.1')
+        }
+    }
+}

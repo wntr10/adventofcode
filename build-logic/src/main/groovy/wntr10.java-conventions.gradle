@@ -1,0 +1,4 @@
+plugins {
+    id 'wntr10.java-common-conventions'
+    id 'java-library'
+}

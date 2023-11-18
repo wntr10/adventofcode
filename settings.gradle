@@ -1,0 +1,10 @@
+pluginManagement {
+    includeBuild('build-logic')
+}
+
+rootProject.name = 'adventofcode'
+
+include('library-adventofcode-core')
+include('library-adventofcode')
+include('app-adventofcode-2019')
+include('app-adventofcode-2022')

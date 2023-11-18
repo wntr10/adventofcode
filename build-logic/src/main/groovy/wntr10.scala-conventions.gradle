@@ -1,0 +1,4 @@
+plugins {
+    id 'wntr10.scala-common-conventions'
+    id 'java-library'
+}
