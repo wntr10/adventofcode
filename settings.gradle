@@ -6,5 +6,7 @@ rootProject.name = 'adventofcode'
 
 include('library-adventofcode-core')
 include('library-adventofcode')
+include('app-adventofcode-2017')
 include('app-adventofcode-2019')
 include('app-adventofcode-2022')
+include('app-adventofcode-2023')
