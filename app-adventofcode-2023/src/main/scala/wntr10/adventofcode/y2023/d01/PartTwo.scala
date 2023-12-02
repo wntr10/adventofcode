@@ -18,13 +18,13 @@ object PartTwo extends App {
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
   )
 
-  private def digit(l: String): String = {
-    val idxFirstString = (Integer.MAX_VALUE :: digits.map(d => l.indexOf(d)).filter(h => h != -1)).min
+  private def digit(l: String, dl: List[String]): String = {
+    val idxFirstString = (Integer.MAX_VALUE :: dl.map(d => l.indexOf(d)).filter(h => h != -1)).min
     val firstDigit = l.find(c => c.isDigit).get
     val idxFirstDigit = l.indexOf(firstDigit)
     val idxFirst = Math.min(idxFirstString, idxFirstDigit)
     val firstSubstring = l.substring(idxFirst)
-    val firstStringOpt = digits.zipWithIndex.find(d => firstSubstring.startsWith(d._1))
+    val firstStringOpt = dl.zipWithIndex.find(d => firstSubstring.startsWith(d._1))
 
     firstStringOpt.map(o => (o._2 + 1).toString).getOrElse(firstSubstring.head.toString)
   }
@@ -32,8 +32,8 @@ object PartTwo extends App {
   private def solve(input: List[String]): Unit = {
 
     println(input.map { l =>
-      val fi = digit(l)
-      val la = digit(l.reverse)
+      val fi = digit(l, digits)
+      val la = digit(l.reverse, digits.map(_.reverse))
       (fi + la).toInt
     }.sum)
 
