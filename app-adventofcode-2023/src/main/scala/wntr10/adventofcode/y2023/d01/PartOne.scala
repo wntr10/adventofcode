@@ -5,29 +5,27 @@ import wntr10.adventofcode.Input
 
 object PartOne extends App {
 
-  private lazy val input: List[String] = {
-    val suffix = ""
-    val input = new Input(this.getClass.getName, suffix)
+  private lazy val input: Parser.Alpha = {
+    val input = new Input(this.getClass.getName)
     val lines = input.read
-      .replace('\n', ';')
 
-    lines.split(';').toList
+    Parser.alpha(lines)
   }
 
   private def digit(l: String): String = {
     l.find(c => c.isDigit).get.toString
   }
 
-  private def solve(input: List[String]): Unit = {
+  private def solve(input: Parser.Alpha): Int = {
 
-    println(input.map { l =>
+    input.map { l =>
       val fi = digit(l)
       val la = digit(l.reverse)
       (fi + la).toInt
-    }.sum)
+    }.sum
 
   }
 
-  solve(input)
+  println(solve(input))
 
 }

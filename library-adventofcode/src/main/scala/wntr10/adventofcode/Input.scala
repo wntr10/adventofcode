@@ -4,7 +4,7 @@ import java.io.{BufferedReader, InputStream, InputStreamReader, Reader}
 
 import com.google.common.io.CharStreams
 
-final class Input(name: String, suffix: String) {
+final class Input(name: String, suffix: String = "") {
   require(name.nonEmpty && (name.endsWith("PartOne$") || name.endsWith("PartTwo$")))
 
   def read: String = {

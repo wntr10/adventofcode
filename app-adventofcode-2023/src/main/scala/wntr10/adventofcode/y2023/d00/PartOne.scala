@@ -7,20 +7,19 @@ object PartOne extends App {
 
   //private val store = scala.collection.mutable.Map.empty[String, Int]
 
-  private lazy val input: List[String] = {
+  private lazy val input: Parser.Alpha = {
     //val suffix = ""
     val suffix = ".ex0"
     val input = new Input(this.getClass.getName, suffix)
     val lines = input.read
-      .replace('\n', ';')
 
-    lines.split(';').toList
+    Parser.alpha(lines)
   }
 
-  private def solve(input: List[String]): Unit = {
-    println(input)
+  private def solve(input: Parser.Alpha): Unit = {
+    ()
   }
 
-  solve(input)
+  println(solve(input))
 
 }

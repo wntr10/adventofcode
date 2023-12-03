@@ -5,40 +5,35 @@ import wntr10.adventofcode.Input
 
 object PartTwo extends App {
 
-  private lazy val input: List[String] = {
-    val suffix = ""
-    val input = new Input(this.getClass.getName, suffix)
+  private lazy val input: Parser.Alpha = {
+    val input = new Input(this.getClass.getName)
     val lines = input.read
-      .replace('\n', ';')
 
-    lines.split(';').toList
+    Parser.alpha(lines)
   }
 
-  private val digits = List(
+  private val txt = List(
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
-  )
+  ).zipWithIndex.map(d => (d._1, d._2 + 1))
 
-  private def digit(l: String, dl: List[String]): String = {
-    val idxFirstString = (Integer.MAX_VALUE :: dl.map(d => l.indexOf(d)).filter(h => h != -1)).min
-    val firstDigit = l.find(c => c.isDigit).get
-    val idxFirstDigit = l.indexOf(firstDigit)
-    val idxFirst = Math.min(idxFirstString, idxFirstDigit)
-    val firstSubstring = l.substring(idxFirst)
-    val firstStringOpt = dl.zipWithIndex.find(d => firstSubstring.startsWith(d._1))
+  private val d = Range.inclusive(0, 9).map(n => (('0' + n).toChar.toString, n)).toList
 
-    firstStringOpt.map(o => (o._2 + 1).toString).getOrElse(firstSubstring.head.toString)
+  private val both = txt ::: d
+
+  private def digit(l: String, dl: List[(String, Int)]): String = {
+    dl.map(d => (l.indexOf(d._1), d._2)).filter(h => h._1 != -1).minBy(e => e._1)._2.toString
   }
 
-  private def solve(input: List[String]): Unit = {
+  private def solve(input: Parser.Alpha): Int = {
 
-    println(input.map { l =>
-      val fi = digit(l, digits)
-      val la = digit(l.reverse, digits.map(_.reverse))
+    input.map { l =>
+      val fi = digit(l, both)
+      val la = digit(l.reverse, both.map(b => (b._1.reverse, b._2)))
       (fi + la).toInt
-    }.sum)
+    }.sum
 
   }
 
-  solve(input)
+  println(solve(input))
 
 }
