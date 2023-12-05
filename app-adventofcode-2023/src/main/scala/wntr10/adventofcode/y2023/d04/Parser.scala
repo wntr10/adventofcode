@@ -1,4 +1,4 @@
-package wntr10.adventofcode.y2023.d02
+package wntr10.adventofcode.y2023.d04
 
 import com.google.common.base.{Charsets, Preconditions, Splitter}
 import com.google.common.io.Files
@@ -14,16 +14,13 @@ object Parser {
 
   class Bravo(var a: Charlie, var b: Delta)
 
+  class Delta(var a: Echo, var b: Echo)
+
   type Charlie = Xray
 
-  type Delta = Array[Echo]
-
-  type Echo = Array[Foxtrot]
-
-  class Foxtrot(var a: Xray, var b: Yankee)
+  type Echo = Array[Xray]
 
   type Xray = Int
-  type Yankee = String
 
   def alpha(a: String): Alpha = {
     val gson = new Gson()
@@ -38,24 +35,20 @@ object Parser {
   }
 
   private def charlie(c: String): String = {
-    xray(c.substring("Game".length).trim)
+    xray(c.substring("Card".length).trim)
   }
 
   private def delta(d: String): String = {
-    array(d, ';', echo)
+    record(d, '|', List(echo, echo))
   }
 
   private def echo(e: String): String = {
-    array(e, ',', foxtrot)
+    array(e, ' ', xray)
   }
 
-  private def foxtrot(f: String): String = {
-    record(f, ' ', List(xray, yankee))
+  private def xray(x: String): String = {
+    x.toInt.toString
   }
-
-  private def xray(x: String): String = x.toInt.toString
-
-  private def yankee(y: String): String = s"\"$y\""
 
   private def array(str: String, c: Char, sub: String => String): String = {
     val list = Splitter.on(c).omitEmptyStrings().trimResults().splitToList(str).asScala

@@ -8,7 +8,8 @@ import java.io.File
 
 object Parser {
 
-  type Alpha = Array[String]
+  type Alpha = Array[Yankee]
+  type Yankee = String
 
   def alpha(a: String): Alpha = {
     val gson = new Gson()

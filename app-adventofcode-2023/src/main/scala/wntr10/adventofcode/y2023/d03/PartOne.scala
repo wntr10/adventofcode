@@ -33,13 +33,13 @@ object PartOne extends App {
           done = done + p.key
           number = number + p.value.str
           var n = next(subGrid, p)
-          adj = adj | n._2
+          adj = adj || n._2
 
           while (n._1.isDefined) {
             done = done + n._1.get.key
             number = number + n._1.get.value.str
             n = next(subGrid, n._1.get)
-            adj = adj | n._2
+            adj = adj || n._2
           }
 
           if (adj) {
