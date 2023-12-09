@@ -13,8 +13,10 @@ object PartOne extends App {
     val input = new Input(this.getClass.getName, suffix)
     val lines = input.read
 
-    Parser.alpha(lines)
+    Parser.parse(lines)
   }
+
+  lazy val length: Int = input.length
 
   private def solve(input: Parser.Alpha): Unit = {
     ()

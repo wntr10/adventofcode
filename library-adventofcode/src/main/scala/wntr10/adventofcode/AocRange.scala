@@ -31,6 +31,8 @@ case class AocRange(start: Long, exclusive: Long) {
     range.exclusive <= start
   }
 
+  def disjoint(range: AocRange): Boolean = before(range) || after(range)
+
   def starts(range: AocRange): Boolean = {
     start == range.start && exclusive <= range.exclusive
   }
@@ -59,9 +61,22 @@ case class AocRange(start: Long, exclusive: Long) {
     set
   }
 
-  def intersectIdx(range: AocRange): AocRange = {
-    val startPrime = range.start - start
-    AocRange(startPrime, startPrime + range.length)
+  def intersect(range: AocRange): Set[AocRange] = {
+    if (disjoint(range)) {
+      Set.empty
+    } else {
+      Set(AocRange(Math.max(start, range.start), Math.min(exclusive, range.exclusive)))
+    }
+  }
+
+  def intersectIdx(ranges: Set[AocRange]): Set[AocRange] = {
+    var i = Set.empty[AocRange]
+    ranges.foreach { range =>
+      if (!disjoint(range)) {
+        i = i ++ Set(AocRange(Math.max(start, range.start) - start, Math.min(exclusive, range.exclusive) - start))
+      }
+    }
+    i
   }
 
   def minusIdx(range: AocRange): Set[AocRange] = {

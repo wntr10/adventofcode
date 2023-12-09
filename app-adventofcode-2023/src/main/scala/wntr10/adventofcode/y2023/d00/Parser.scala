@@ -1,6 +1,6 @@
 package wntr10.adventofcode.y2023.d00
 
-import com.google.common.base.{Charsets, Preconditions, Splitter}
+import com.google.common.base.{CharMatcher, Charsets, Preconditions, Splitter}
 import com.google.common.io.Files
 import com.google.gson.Gson
 
@@ -18,93 +18,166 @@ object Parser {
   //type Delta = String
   //class Echo(var a: String, var b: String)
 
+  type Tango = BigInt
+  type Uniform = BigDecimal
   type Victor = List[Yankee]
   type Whiskey = Double
   type Xray = Int
   type Yankee = String
   type Zulu = Boolean
 
-  def alpha(a: String): Alpha = {
-    println(s"alpha of <$a>")
+  def parse(str: String): Alpha = {
     val gson = new Gson()
-    val json = array(a, '\n', bravo)
+    val json = alpha(str)
     val f = new File("input.json")
     Files.asCharSink(f, Charsets.UTF_8).write(json)
     gson.fromJson(json, classOf[Alpha])
   }
 
-  private def bravo(b: String): String = {
-    println(s"bravo of <$b>")
-    yankee(b)
+  def alpha(str: String): String = {
+    println(s"alpha of <$str>")
+    array(str, '\n', bravo)
   }
 
-  // record(b, ':', List(charlie, delta))
-  // xray(c.substring("Game".length).trim)
-  // array(d, ';', echo)
-
-  private def charlie(c: String): String = {
-    c
+  private def bravo(str: String): String = {
+    println(s"bravo of <$str>")
+    yankee(str)
   }
 
-  private def delta(d: String): String = {
-    d
+  // record(str, ':', List(charlie, delta))
+  // xray(str.substring("Game".length).trim)
+  // array(str, ';', echo)
+
+  private def charlie(str: String): String = {
+    str
   }
 
-  private def echo(e: String): String = {
-    e
+  private def delta(str: String): String = {
+    str
   }
 
-  private def foxtrot(f: String): String = {
-    f
+  private def echo(str: String): String = {
+    str
   }
 
-  private def victor(v: String): String = {
-    //println(s"victor of <$v>")
-    array(v, yankee)
+  private def foxtrot(str: String): String = {
+    str
   }
 
-  private def whiskey(w: String): String = {
-    //println(s"whiskey of <$w>")
-    w.toDouble.toString
+  private def juliett(str: String): String = {
+    yankee(str
+      .replace("(", "")
+      .replace(")", "")
+      .replace("[", "")
+      .replace("]", "")
+      .replace("{", "")
+      .replace("}", "")
+    )
   }
 
-  private def xray(x: String): String = {
-    //println(s"xray of <$x>")
-    x.toInt.toString
+  private def tango(str: String): String = {
+    //println(s"tango of <$str>")
+    BigInt(str).toString()
   }
 
-  private def yankee(y: String): String = {
-    //println(s"yankee of <$y>")
-    s"\"$y\""
+  private def uniform(str: String): String = {
+    //println(s"uniform of <$str>")
+    BigDecimal(str).toString()
   }
 
-  private def zulu(z: String): String = {
-    //println(s"zulu of <$z>")
-    z.toBoolean.toString
+  private def victor(str: String): String = {
+    //println(s"victor of <$str>")
+    array(str, yankee)
   }
 
-  private def array(str: String, c: Char, sub: String => String): String = {
-    val list = Splitter.on(c).omitEmptyStrings().trimResults().splitToList(str).asScala
-    list.map { p =>
-      sub(p)
-    }.mkString("[", ", ", "]")
+  private def whiskey(str: String): String = {
+    //println(s"whiskey of <$str>")
+    str.toDouble.toString
   }
 
-  private def arrayPreserveEmptyStrings(str: String, c: Char, sub: String => String): String = {
-    val list = Splitter.on(c).trimResults().splitToList(str).asScala
-    list.map { p =>
-      sub(p)
-    }.mkString("[", ", ", "]")
+  private def xray(str: String): String = {
+    //println(s"xray of <$str>")
+    str.toInt.toString
+  }
+
+  private def yankee(str: String): String = {
+    //println(s"yankee of <$str>")
+    s"\"$str\""
+  }
+
+  private def zulu(str: String): String = {
+    //println(s"zulu of <$str>")
+    str.toBoolean.toString
+  }
+
+  //alpha                  Array[Bravo]
+  //bravo
+  //charlie
+  //delta
+  //echo
+  //foxtrot
+  //golf
+  //hotel
+  //india
+  //--------
+  //juliett  strip ()[]{}  String
+  //kilo
+  //lima
+  //mike
+  //november
+  //oscar
+  //papa
+  //quebec
+  //--------
+  //romeo
+  //sierra
+  //tango   1212121242     BigInt
+  //uniform 1212121242.0   BigDecimal
+  //victor  ["a", "y"]     Array of Strings
+  //whiskey -6.0, 0.0, 8.0 Double
+  //xray    -2, 0, 5       Int
+  //yankee  "xyz"          String
+  //zulu    true, false    Boolean
+
+
+  private def array(str: String, separator: Char, sub: String => String): String = {
+    arrayInt(Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala, sub)
+  }
+
+  private def array(str: String, separator: String, sub: String => String): String = {
+    arrayInt(Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala, sub)
+  }
+
+  private def array(str: String, separator: CharMatcher, sub: String => String): String = {
+    arrayInt(Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala, sub)
   }
 
   private def array(str: String, sub: String => String): String = {
-    str.map { p =>
-      sub(p.toString)
+    arrayInt(str.map(_.toString).toBuffer, sub)
+  }
+
+  private def arrayPreserveEmptyStrings(str: String, c: Char, sub: String => String): String = {
+    arrayInt(Splitter.on(c).trimResults().splitToList(str).asScala, sub)
+  }
+
+  private def arrayInt(buffer: mutable.Buffer[String], sub: String => String): String = {
+    buffer.map { p =>
+      sub(p)
     }.mkString("[", ", ", "]")
   }
 
-  private def record(str: String, c: Char, sub: List[String => String]): String = {
-    val buffer = Splitter.on(c).omitEmptyStrings().trimResults().splitToList(str).asScala
+  private def record(str: String, separator: String, sub: List[String => String]): String = {
+    val buffer = Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala
+    recordInt(buffer, sub)
+  }
+
+  private def record(str: String, separator: Char, sub: List[String => String]): String = {
+    val buffer = Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala
+    recordInt(buffer, sub)
+  }
+
+  private def record(str: String, separator: CharMatcher, sub: List[String => String]): String = {
+    val buffer = Splitter.on(separator).omitEmptyStrings().trimResults().splitToList(str).asScala
     recordInt(buffer, sub)
   }
 

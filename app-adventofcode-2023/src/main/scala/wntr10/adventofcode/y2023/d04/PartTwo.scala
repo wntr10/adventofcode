@@ -1,12 +1,10 @@
 package wntr10.adventofcode.y2023.d04
 
 import com.google.common.base.Preconditions
-import com.google.common.collect.Iterators
 import wntr10.adventofcode.Input
 
 import java.util
 import java.util.concurrent.TimeUnit
-import scala.jdk.CollectionConverters.IteratorHasAsJava
 
 
 object PartTwo extends App {

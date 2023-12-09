@@ -14,54 +14,22 @@ object PartTwo extends App {
     Parser.alpha(lines)
   }
 
-
   private def help(value: AocRange, ranges: List[(AocRange, AocRange)]): Set[AocRange] = {
-    var todo = value
+    var todo = Set(value)
     var prime = Set.empty[AocRange]
     ranges.foreach { rm =>
       val r = rm._1
-      if (r.before(todo)) {
-        // skip
-      } else if (r.after(todo)) {
-        return prime + todo
-      } else if (r.equals(todo)) {
-        return prime + rm._2
-      } else if (r.starts(todo)) {
-        todo = todo.rsubrange(todo.length - r.length)
-        prime += rm._2
-      } else if (r.finishes(todo)) {
-        val tmp = r.minus(todo).head.length
-        val tmp2 = rm._2.subrange(tmp)
-        return prime + tmp2
-      } else if (r.during(todo)) {
-        return prime ++ todo.minus(r) + rm._2
-      } else if (todo.during(r)) {
-        val idx = Set(r.intersectIdx(todo))
-        return prime ++ rm._2(idx)
-      } else if (todo.overlap(r)) {
-        val tmp = todo.length
-        todo = todo.minus(r).head
-        return prime + todo + rm._2.rsubrange(r.length - (tmp - todo.length))
-      } else if (r.overlap(todo)) {
-        val tmp = r.minus(todo).head.length
-        val tmp2 = rm._2.subrange(tmp)
-        todo = todo.subrange(tmp2.length)
-        prime = prime + tmp2
-      } else {
-        throw new RuntimeException()
-      }
+      prime = prime ++ rm._2(r.intersectIdx(todo))
+      todo = todo.flatMap(t => t.minus(r))
     }
-    prime + todo
+    prime ++ todo
   }
 
   private def mapRanges(values: List[AocRange], ranges: List[(AocRange, AocRange)]): List[AocRange] = {
-
     values.flatMap { value =>
-      val rangesSorted = ranges.sortBy(r => r._1.start)
-      help(value, rangesSorted).filter(r => r.length != 0)
+      help(value, ranges).filter(r => r.length != 0)
     }
   }
-
 
   private def solve(input: Parser.Alpha): Long = {
 
