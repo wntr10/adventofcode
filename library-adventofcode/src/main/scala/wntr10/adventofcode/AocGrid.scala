@@ -4,8 +4,17 @@ import scala.collection.immutable.SortedMap
 
 final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
 
+  def nodes(): Set[AocNode] = {
+    map.map(e => AocNode(e._1, e._2)).toSet
+  }
+
   def filter(pred: AocNode => Boolean): AocGrid = {
     new AocGrid(map.filter(p => pred(AocNode(p._1, p._2))))
+  }
+
+  def map(m: ((AocKey, AocValue)) => (AocKey, AocValue)): AocGrid = {
+    implicit val ordering: AocKeyOrdering.type = AocKeyOrdering
+    new AocGrid(map.map(p => m(p)))
   }
 
   def foreach(f: AocNode => Unit): Unit = {
