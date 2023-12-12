@@ -2,7 +2,9 @@ package wntr10.adventofcode.y2023.d00
 
 import com.google.common.base.{CharMatcher, Preconditions}
 import com.google.common.collect.Iterators
+import org.roaringbitmap.RoaringBitmap
 
+import scala.collection.mutable
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 object Scribble extends App {
@@ -20,5 +22,20 @@ object Scribble extends App {
     aoc.charAt(idx % aoc.length).toString
   }.mkString("[", ",", "]")
   println(aocaoc)
+
+  val bs = new mutable.BitSet()
+
+  bs.add(4)
+  bs.add(6)
+  bs.add(13)
+
+  println(bs)
+  println(bs.size)
+  println(bs.head)
+
+  val rr = RoaringBitmap.bitmapOf(7,8,10,15)
+  println(rr)
+  val r2 = RoaringBitmap.addOffset(rr, - 7)
+  println(r2)
 
 }

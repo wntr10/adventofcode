@@ -39,7 +39,7 @@ object PartTwo extends App {
 
     val solution = arr.sum
 
-    println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms")
+    println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start).toString + "ms")
 
     solution
   }

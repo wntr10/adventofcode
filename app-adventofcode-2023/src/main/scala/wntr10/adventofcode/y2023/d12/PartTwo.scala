@@ -3,7 +3,8 @@ package wntr10.adventofcode.y2023.d12
 import com.google.common.base.{CharMatcher, Splitter}
 import wntr10.adventofcode.Input
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{CompletableFuture, Executors, TimeUnit}
+import java.util.function.Supplier
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 
@@ -51,28 +52,9 @@ object PartTwo extends App {
   private def valid(str: String, oracle: String): Option[Boolean] = {
     val f = validSub(str, oracle)
     if (f.isEmpty) {
-      val f2 = validDots(str, oracle)
-      if (f2.isEmpty) {
-        validSub(str.reverse, oracle.reverse)
-      } else {
-        Some(false)
-      }
+      validSub(str.reverse, oracle.reverse)
     } else {
       f
-    }
-  }
-
-  private def validDots(str: String, oracle: String): Option[Boolean] = {
-    val min = Splitter.on('.')
-      .omitEmptyStrings()
-      .splitToList(str)
-      .asScala
-      .count(s => s.forall(f => f == '#'))
-
-    if (min > oracle.count(c => c == '.') + 1) {
-      Some(false)
-    } else {
-      None
     }
   }
 
@@ -98,35 +80,39 @@ object PartTwo extends App {
     }
   }
 
-  private def arrangements(str: String, q: Int, oracle: String): BigInt = {
-    val n = normalize(str)
-    val configs = scala.collection.mutable.Map(n -> BigInt(1))
-    var r = 0
-    var count = BigInt(0)
-    while (r < q) {
-      configs.filterInPlace { (k, v) =>
-        val e = valid(k, oracle)
-        if (e.isDefined && e.get) {
-          count = count + ((q - r) * v)
-          false
-        } else if (e.isDefined) {
-          false
-        } else {
-          true
-        }
+  private def filter(map: scala.collection.mutable.Map[String, Long], oracle: String): Long = {
+    var count = 0L
+    map.filterInPlace { (k, v) =>
+      val e = valid(k, oracle)
+      if (e.isDefined && e.get) {
+        count = count + v
+        false
+      } else {
+        e.isEmpty
       }
+    }
+    count
+  }
+
+  private def arrangements(str: String, q: Int, oracle: String): Long = {
+    val n = normalize(str)
+    val configs = scala.collection.mutable.Map(n -> 1L)
+    var r = 0
+    var count = 0L
+    while (r < q) {
+      count = count + filter(configs, oracle)
 
       configs.toList.foreach { e =>
         configs.remove(e._1)
         if (r % 2 == 1) {
           replace(e._1).foreach { pr =>
-            val i = configs.getOrElse(pr, BigInt(0))
+            val i = configs.getOrElse(pr, 0L)
             configs(pr) = i + e._2
           }
         } else {
           replace(e._1.reverse).foreach { pr =>
             val rpr = pr.reverse
-            val i = configs.getOrElse(rpr, BigInt(0))
+            val i = configs.getOrElse(rpr, 0L)
             configs(rpr) = i + e._2
           }
         }
@@ -134,43 +120,50 @@ object PartTwo extends App {
       r += 1
     }
 
-    configs.filterInPlace { (k, v) =>
-      val e = valid(k, oracle)
+    count = count + filter(configs, oracle)
 
-      if (e.isDefined && e.get) {
-        count = count + v
-        false
-      } else if (e.isDefined) {
-        false
-      } else {
-        true
-      }
-    }
     require(configs.isEmpty)
 
     count
   }
 
-  private def solve(input: Parser.Alpha): BigInt = {
+  private def solve(input: Parser.Alpha): Long = {
     val para = input.toList
 
+    val service = Executors.newFixedThreadPool(32)
     val start = System.nanoTime()
 
-    val solution = para.map { elem =>
-      val a = elem.a
-      val b = elem.b.toList
+    val solution = try {
 
-      val am = (a + "?").repeat(4) + a
-      val bm = b ::: b ::: b ::: b ::: b
+      val supplier = para.map { elem =>
+        new Supplier[Long]() {
+          private val a = elem.a
+          private val b = elem.b.toList
 
-      val obm = oracle(bm)
+          override def get(): Long = {
+            val am = (a + "?").repeat(4) + a
+            val bm = b ::: b ::: b ::: b ::: b
 
-      val qam = am.count(c => c == '?')
+            val obm = oracle(bm)
 
-      arrangements(am, qam, obm)
-    }.sum
+            val qam = am.count(c => c == '?')
 
-    println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms")
+            arrangements(am, qam, obm)
+          }
+        }
+      }
+
+      val future = supplier.map { s =>
+        CompletableFuture.supplyAsync(s, service)
+      }
+
+      future.map(_.get()).sum
+
+    } finally {
+      service.shutdownNow()
+    }
+
+    println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start).toString + "ms")
 
     solution
   }

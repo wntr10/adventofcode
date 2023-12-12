@@ -5,7 +5,7 @@ import java.io.{BufferedReader, InputStream, InputStreamReader, Reader}
 import com.google.common.io.CharStreams
 
 final class Input(name: String, suffix: String = "") {
-  require(name.nonEmpty && (name.endsWith("PartOne$") || name.endsWith("PartTwo$")))
+  require(name.nonEmpty && (name.endsWith("PartOne$") || name.endsWith("PartTwo$") || name.endsWith("PartAlt$")))
 
   def read: String = {
     val namePrime = name.substring(0, name.length - ".PartOne$".length) + suffix
