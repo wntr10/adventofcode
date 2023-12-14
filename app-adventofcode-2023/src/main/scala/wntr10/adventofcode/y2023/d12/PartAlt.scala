@@ -4,9 +4,10 @@ import wntr10.adventofcode.Input
 
 import java.util.concurrent.{CompletableFuture, Executors, TimeUnit}
 import java.util.function.Supplier
+import scala.collection.mutable
 
 
-object PartTwo extends App {
+object PartAlt extends App {
 
   private lazy val input: Parser.Alpha = {
     val input = new Input(this.getClass.getName)
@@ -17,7 +18,7 @@ object PartTwo extends App {
 
   lazy val length: Int = input.length
 
-  private def replace(str: String): Set[String] = {
+  private def replace(str: String): List[String] = {
     val i = str.indexOf('?')
     val arr = str.toCharArray
 
@@ -28,7 +29,7 @@ object PartTwo extends App {
     val bs = arr.mkString("")
     val b = normalize(bs)
 
-    Set(a, b)
+    List(a, b)
   }
 
   private def oracle(list: List[Int]): String = {
@@ -73,76 +74,49 @@ object PartTwo extends App {
     sb.toString()
   }
 
-  private def valid(str: String, oracle: String): Option[Boolean] = {
-    val f = validSub(str, oracle)
-    if (f.isEmpty) {
-      validSub(str.reverse, oracle.reverse)
-    } else {
-      f
-    }
-  }
-
-  private def validSub(str: String, oracle: String): Option[Boolean] = {
+  private def validDp(str: String, oracle: String): (Option[(String, String)], Boolean) = {
     val qi = str.indexOf('?')
     if (qi == -1) {
-      Some(str == oracle)
+      (None, str == oracle)
     } else {
       val left = str.substring(0, qi)
       if (left.isEmpty) {
-        None
-      } else if (oracle.startsWith(left)) {
-        None
+        (Some((str, oracle)), true)
       } else {
-        Some(false)
-      }
-    }
-  }
-
-  private def filter(map: scala.collection.mutable.Map[String, Long], oracle: String): Long = {
-    var count = 0L
-    map.filterInPlace { (k, v) =>
-      val e = valid(k, oracle)
-      if (e.isDefined && e.get) {
-        count = count + v
-        false
-      } else {
-        e.isEmpty
-      }
-    }
-    count
-  }
-
-  private def arrangements(str: String, q: Int, oracle: String): Long = {
-    val n = normalize(str)
-    val configs = scala.collection.mutable.Map(n -> 1L)
-    var r = 0
-    var count = 0L
-    while (r < q) {
-      count = count + filter(configs, oracle)
-
-      configs.toList.foreach { e =>
-        configs.remove(e._1)
-        if (r % 2 == 1) {
-          replace(e._1).foreach { pr =>
-            val i = configs.getOrElse(pr, 0L)
-            configs(pr) = i + e._2
+        if (oracle.startsWith(left)) {
+          val i = left.lastIndexOf('.')
+          if (i == -1) {
+            (Some((str, oracle)), true)
+          } else {
+            (Some(str.substring(i), oracle.substring(i)), true)
           }
         } else {
-          replace(e._1.reverse).foreach { pr =>
-            val rpr = pr.reverse
-            val i = configs.getOrElse(rpr, 0L)
-            configs(rpr) = i + e._2
-          }
+          (None, false)
         }
       }
-      r += 1
     }
+  }
 
-    count = count + filter(configs, oracle)
-
-    require(configs.isEmpty)
-
-    count
+  private def dp(store: mutable.Map[(String, String), Long])(config: String, oracle: String): Long = {
+    val key = (config, oracle)
+    val cached = store.get(key)
+    if (cached.isDefined) {
+      cached.get
+    } else {
+      val count = replace(config).map { c =>
+        val opt = validDp(c, oracle)
+        if (!opt._2) {
+          0L
+        } else if (opt._1.isEmpty) {
+          1L
+        } else {
+          val continue = opt._1.get
+          dp(store)(continue._1, continue._2)
+        }
+      }.sum
+      store.put(key, count)
+      count
+    }
   }
 
   private def solve(input: Parser.Alpha): Long = {
@@ -157,16 +131,14 @@ object PartTwo extends App {
         new Supplier[Long]() {
           private val a = elem.a
           private val b = elem.b.toList
+          private val store = scala.collection.mutable.Map.empty[(String, String), Long]
 
           override def get(): Long = {
             val am = (a + "?").repeat(4) + a
             val bm = b ::: b ::: b ::: b ::: b
-
             val obm = oracle(bm)
-
-            val qam = am.count(c => c == '?')
-
-            arrangements(am, qam, obm)
+            val solution = dp(store)(normalize(am), obm)
+            solution
           }
         }
       }

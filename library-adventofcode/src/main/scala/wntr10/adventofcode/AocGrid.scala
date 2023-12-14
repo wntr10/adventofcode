@@ -49,6 +49,16 @@ final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
     c
   }
 
+  def move(node: AocNode, dir: Int, pred: AocValue => Boolean, trash: AocValue): Option[AocGrid] = {
+    val n = neighbor(node.key, dir, pred)
+    if (n.isDefined) {
+      val mapPrime = map.updated(n.get.key, node.value).updated(node.key, trash)
+      Some(new AocGrid(mapPrime))
+    } else {
+      None
+    }
+  }
+
   def neighbor(key: AocKey, dir: Int, pred: AocValue => Boolean): Option[AocNode] = {
     AocInterleave.neighbor(key.str, dir).flatMap { n =>
       val k = AocKey(n)
