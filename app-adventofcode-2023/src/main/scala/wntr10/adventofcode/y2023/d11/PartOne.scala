@@ -43,7 +43,7 @@ object PartOne extends App {
 
     val grid = AocGrid.of(inputX, s => AocStringValue(s))
 
-    val current = grid.nodes().filter(n => n.value.str == "#").toList
+    val current = grid.nodes.filter(n => n.value.str == "#").toList
 
     val pairs = scala.collection.mutable.Set.empty[(AocNode, AocNode)]
 

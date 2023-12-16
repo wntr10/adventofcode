@@ -44,7 +44,7 @@ object PartTwo extends App {
     val subGrid = grid
     subGrid.show()
 
-    val current = grid.nodes().filter(n => n.value.str == "#").toList
+    val current = grid.nodes.filter(n => n.value.str == "#").toList
 
     var ll = List.empty[(AocNode, AocNode)]
 

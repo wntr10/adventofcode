@@ -21,7 +21,7 @@ object PartTwo extends App {
 
     while (!stop) {
       stop = true
-      rr = gridPrime.nodes().filter(n => n.value.str == "O").toList
+      rr = gridPrime.nodes.filter(n => n.value.str == "O").toList
       rr.foreach { r =>
         val ng = gridPrime.move(r, dir, v => v.str == ".", AocStringValue("."))
         if (ng.isDefined) {
@@ -76,7 +76,7 @@ object PartTwo extends App {
       remainderCycle += 1
     }
 
-    val rocks = gridPrime.nodes().filter(n => n.value.str == "O").toList
+    val rocks = gridPrime.nodes.filter(n => n.value.str == "O").toList
 
     rocks.map { r =>
       val xy = AocInterleave.squash(BigInt(r.key.str, 4))

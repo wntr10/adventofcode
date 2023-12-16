@@ -38,4 +38,54 @@ object Scribble extends App {
   val r2 = RoaringBitmap.addOffset(rr, - 7)
   println(r2)
 
+  val str = "...####....###...##.."
+
+  val arr = str.toCharArray
+  arr(1) = '#'
+  val strPrime = arr.mkString
+
+  println(s"<$str> vs <$strPrime>")
+
+  def strip(str: String): String = {
+    val sb = new StringBuilder
+    sb.append('.')
+    var i = 0
+    while (i != -1 && i < str.length) {
+      val ni = str.indexOf('.', i)
+      i = if (ni == -1) {
+        sb.append(str.substring(i))
+        sb.append('.')
+        ni
+      } else if (i == ni) {
+        str.indexOf('#', ni + 1)
+      } else {
+        sb.append(str.substring(i, ni + 1))
+        str.indexOf('#', ni + 1)
+      }
+    }
+    sb.toString()
+  }
+
+  val s0 = strip(str)
+  println(s"<$s0>")
+
+  val s1 = strip("###...######...")
+  println(s"<$s1> ($s1)")
+
+  val s2 = strip("###.##..#..######")
+  println(s"<$s2> ($s2)")
+
+  val s3 = strip("")
+  println(s"<$s3> ($s3)")
+
+  val s4 = strip(".")
+  println(s"<$s4> ($s4)")
+
+  val s5 = strip("..")
+  println(s"<$s5> ($s5)")
+
+  val s6 = strip("#")
+  println(s"<$s6> ($s6)")
+
+
 }

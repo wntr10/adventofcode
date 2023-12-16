@@ -98,7 +98,7 @@ object PartTwo extends App {
     }
 
     val loopGrid = grid.map(e => if (!done.exists(p => p.key == e._1)) (e._1, AocStringValue(".")) else e)
-    val check = loopGrid.nodes().diff(done)
+    val check = loopGrid.nodes.diff(done)
 
     val out = check.filter { n =>
       findAWayOut(n, loopGrid)
