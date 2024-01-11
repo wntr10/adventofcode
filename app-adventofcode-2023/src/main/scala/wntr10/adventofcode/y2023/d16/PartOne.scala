@@ -41,6 +41,8 @@ object PartOne extends App {
 
       case (_, _, ".", _) =>
         Set(beam)
+
+      case _ => throw new RuntimeException()
     }
   }
 

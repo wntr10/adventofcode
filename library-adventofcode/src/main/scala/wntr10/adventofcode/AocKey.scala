@@ -1,5 +1,8 @@
 package wntr10.adventofcode
 
-final case class AocKey(str: String) {
+trait AocKey {
+
+  def str: String
+  def xy: (BigInt, BigInt)
 
 }

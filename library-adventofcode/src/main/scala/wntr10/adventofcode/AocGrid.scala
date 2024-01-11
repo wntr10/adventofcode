@@ -19,6 +19,7 @@ final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
   private lazy val maxY = xy.map(_._1._2).max
 
   lazy val topLeft: AocNode = xy.find(n => n._1._1 == minX && n._1._2 == maxY).map(_._2).get
+  lazy val bottomRight: AocNode = xy.find(n => n._1._1 == maxX && n._1._2 == minY).map(_._2).get
 
   lazy val top: Set[AocNode] = xy.filter(_._1._2 == maxY).map(_._2)
   lazy val bottom: Set[AocNode] = xy.filter(_._1._2 == minY).map(_._2)
@@ -134,9 +135,26 @@ final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
     }
   }
 
+  def neighborModulo(key: AocKey, dir: Int, pred: AocValue => Boolean): Option[AocNode] = {
+    AocInterleave.neighbor(key.str, dir).flatMap { n =>
+      val k = AocQuad(n)
+      val p = AocInterleave.squash(BigInt(k.str, 4))
+      val pPrime = (p._1 % maxX, p._2 % maxY)
+
+      val vOpt = map.get(k)
+      vOpt.flatMap { v =>
+        if (pred(v)) {
+          Some(AocNode(k, v))
+        } else {
+          None
+        }
+      }
+    }
+  }
+
   def neighbor(key: AocKey, dir: Int, pred: AocValue => Boolean): Option[AocNode] = {
     AocInterleave.neighbor(key.str, dir).flatMap { n =>
-      val k = AocKey(n)
+      val k = AocQuad(n)
       val vOpt = map.get(k)
       vOpt.flatMap { v =>
         if (pred(v)) {
@@ -150,7 +168,7 @@ final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
 
   def neighbors(key: AocKey, pred: AocValue => Boolean): List[AocNode] = {
     AocInterleave.neighbors(key.str).drop(1).filter(_.isDefined).map(_.get).flatMap { neighbor =>
-      val k = AocKey(neighbor)
+      val k = AocQuad(neighbor)
       val vOpt = map.get(k)
       vOpt.flatMap { v =>
         if (pred(v)) {
@@ -204,9 +222,53 @@ final class AocGrid(val map: SortedMap[AocKey, AocValue]) {
       println()
     }
   }
+
+  def arr(background: String): Array[Array[String]] = {
+    val xy = map.map { kv =>
+      val p = AocInterleave.squash(BigInt(kv._1.str, 4))
+      (p._1.toInt, p._2.toInt) -> kv._2
+    }
+
+    val maxX = xy.map(_._1._1).max
+    val maxY = xy.map(_._1._2).max
+
+    Array.tabulate[String](maxY + 1, maxX + 1)((y, x) => xy.get(x, maxY - y).getOrElse(AocStringValue(background)).str)
+  }
+
 }
 
 object AocGrid {
+
+
+  def repeat(grid: Array[Array[String]]): Array[Array[String]] = {
+    val max = grid.map(_.length).max
+    val max3 = grid.map(_.length).max * 3
+    val gridPrime = Array.ofDim[String](grid.length * 3, max3)
+
+    val len = grid.length
+    var i = 0
+    while (i < len) {
+      val line = Array.ofDim[String](max3)
+      val lineFilter = Array.ofDim[String](max3)
+      val src = grid(i)
+      val srcFilter = grid(i).map(s => if (s == "S") "." else s)
+
+      System.arraycopy(srcFilter, 0, line, 0, max)
+      System.arraycopy(src, 0, line, max, max)
+      System.arraycopy(srcFilter, 0, line, max * 2, max)
+
+      System.arraycopy(srcFilter, 0, lineFilter, 0, max)
+      System.arraycopy(srcFilter, 0, lineFilter, max, max)
+      System.arraycopy(srcFilter, 0, lineFilter, max * 2, max)
+
+      gridPrime(i) = lineFilter
+      gridPrime(i + len) = line
+      gridPrime(i + len * 2) = lineFilter.clone()
+
+      i += 1
+    }
+    gridPrime
+  }
 
   def upscale(grid: Array[Array[String]], map: String => Array[Array[String]]): Array[Array[String]] = {
     val max = grid.map(_.length).max
@@ -274,10 +336,81 @@ object AocGrid {
         } else {
           key
         }
-        map = map.updated(AocKey(keyPadded), f(value))
+        map = map.updated(AocQuad(keyPadded), f(value))
       }
     }
 
     new AocGrid(map)
   }
+
+  def of(grid: Set[(Int, Int, String)], f: String => AocValue): AocGrid = {
+
+    var gridPrime = grid
+
+    var maxY = grid.map(_._2).max
+    var maxX = grid.map(_._1).max
+
+    val minY = grid.map(_._2).min
+    val minX = grid.map(_._1).min
+
+    //val width = maxX - minX
+    //val height = maxY - minY
+
+    if (minX < 0) {
+      gridPrime = gridPrime.map { xy =>
+        (xy._1 + Math.abs(minX), xy._2, xy._3)
+      }
+      maxX += Math.abs(minX)
+    }
+
+    if (minY < 0) {
+      gridPrime = gridPrime.map { xy =>
+        (xy._1, xy._2 + Math.abs(minY), xy._3)
+      }
+      maxY += Math.abs(minY)
+    }
+
+    val max = AocInterleave.interleave(maxX, maxY).toString(4)
+    val level = max.length
+    implicit val ordering: AocKeyOrdering.type = AocKeyOrdering
+    var map = SortedMap.empty[AocKey, AocValue]
+
+    gridPrime.foreach { xy =>
+      val key = AocInterleave.interleave(xy._1, xy._2).toString(4)
+      val keyPadded = if (key.length < level) {
+        "0" * (level - key.length) + key
+      } else {
+        key
+      }
+      map = map.updated(AocQuad(keyPadded), f(xy._3))
+    }
+
+    new AocGrid(map)
+  }
+
+  def of2(grid: Set[(Int, Int, String)], f: String => AocValue): AocGrid = {
+
+    val gridPrime = grid
+
+    val maxY = grid.map(_._2).max
+    val maxX = grid.map(_._1).max
+
+    val max = AocInterleave.interleave(maxX, maxY).toString(4)
+    val level = max.length
+    implicit val ordering: AocKeyOrdering.type = AocKeyOrdering
+    var map = SortedMap.empty[AocKey, AocValue]
+
+    gridPrime.foreach { xy =>
+      val key = AocInterleave.interleave(xy._1, xy._2).toString(4)
+      val keyPadded = if (key.length < level) {
+        "0" * (level - key.length) + key
+      } else {
+        key
+      }
+      map = map.updated(AocQuad(keyPadded), f(xy._3))
+    }
+
+    new AocGrid(map)
+  }
+
 }
