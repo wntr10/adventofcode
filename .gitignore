@@ -27,3 +27,28 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Eclipse
+.cache-main
+.cache-tests
+
+# Maven
+log/
+target/
+
+# Intellij
+*.iml
+.idea/
+/.metadata/
+
+# Other
+tmp
+*-local.*
+*TestLocal.*
+.hprof
+**/test/resources/*Test
+
+**/.gradle
+build
+
+**/day??
