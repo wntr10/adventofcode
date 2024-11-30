@@ -77,6 +77,3 @@ object Bag {
   }
 }
 
-// Tests
-
-

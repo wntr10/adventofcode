@@ -1,14 +1,8 @@
-import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
 
 val ex = ".ex1" // 281
 val inputRaw = read(s"day01$ex")
-
-// Scala string interpolation cannot handle escaped characters
-require(!inputRaw.contains("%"))
-val input = inputRaw.replace('"', '%')
-val lines = split("\n", input)
+val lines = split("\n", inputRaw)
 
 type LINE = BigInt
 var prime = Vector.empty[LINE]
@@ -33,5 +27,4 @@ lines.zipWithIndex.foreach {
     visit(lines, idx)
 }
 
-println(prime.size)
 println(prime.sum)
