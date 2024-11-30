@@ -3,6 +3,10 @@ class Bag[T](delegate: Map[T, BigInt]) {
 
   override def toString = delegate.toString()
 
+  def values(): Iterable[BigInt] = {
+    delegate.values
+  }
+
   def sumBy(pred: T => Boolean): BigInt = {
     delegate.filter(e => pred(e._1)).values.sum
   }
@@ -76,4 +80,5 @@ object Bag {
     bag
   }
 }
+
 

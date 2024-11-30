@@ -3,15 +3,10 @@ import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
 import $file.^.Bags, Bags._
 
-val ex = ".lines"
-val inputRaw = read(s"day0$ex")
+val ex = ".ex0" // 12
+val inputRaw = read(s"day02$ex")
+val lines = split("\n", inputRaw)
 
-// Scala string interpolation cannot handle escaped characters
-require(!inputRaw.contains("%"))
-val input = inputRaw.replace('"', '%')
-val lines = split("\n", input)
-
-//type LINE = BigInt
 type LINE = String
 var prime = Vector.empty[LINE]
 var countRest = 0
@@ -33,28 +28,24 @@ lines.zipWithIndex.foreach {
 }
 
 require(countRest == 0)
-println(prime.size)
-println(prime)
-//println(prime.sum)
 
 type RESULT = BigInt
 
 def run(): RESULT = {
-  var r: RESULT = 0
-  //var window = Vector.empty[LINE]
+  var r2: RESULT = 0
+  var r3: RESULT = 0
   prime.zipWithIndex.foreach {
     case (p, _) =>
-      r = r + p.size
-      //window = p +: window
-      //if (window.length == 2) {
-        //r = r + 1
-      //}
-      // time to live
-      //if (window.length == 2) {
-        //window = window.dropRight(1)
-      //}
+      val b = Bag.of(p.toList)
+      if (b.values().exists(v => v == 3)) {
+        r3 = r3 + 1
+      }
+
+      if (b.values().exists(v => v == 2)) {
+        r2 = r2 + 1
+      }
   }
-  r
+  r2 * r3
 }
 
 println(run())

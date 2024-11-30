@@ -23,6 +23,16 @@ object Input {
   }
 }
 
+def distance(a: String, b: String): BigInt = {
+  require(a.length == b.length)
+  var d = BigInt(0)
+  a.zip(b).foreach {
+    case (ac, bc) =>
+      d = d + Math.abs(ac.toInt - bc.toInt)
+  }
+  d
+}
+
 def toBigInt(s: String): BigInt = {
   s match {
     case "zero" => BigInt(0)
