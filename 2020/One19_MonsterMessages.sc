@@ -3,7 +3,7 @@ import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic
 import Basic._, Input._
 
-val ex = ""
+val ex = ".ex1" // 2
 
 val inputRaw = read(s"day19$ex")
 val input = inputRaw.replace('"', '%')

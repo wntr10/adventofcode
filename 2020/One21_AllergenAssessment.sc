@@ -1,8 +1,11 @@
 import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
 import $ivy.`com.google.guava:guava:33.3.1-jre`
-import $file.^.Basic, Basic._, Input._
+import $file.^.Basic
+import Basic.Input._
+import $file.^.Bags
+import Bags._
 
-val ex = ""
+val ex = ".ex0" // 5
 
 val input = read(s"day21$ex")
 val lines = split("\n", input)
@@ -55,6 +58,7 @@ while (!stop) {
 
 println(solve)
 val f = solve.values.toSet.flatten
+
 println(bag.sumBy(e => !f.contains(e)))
 
 // Two
