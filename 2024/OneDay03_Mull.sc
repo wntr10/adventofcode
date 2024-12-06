@@ -1,9 +1,10 @@
-import $file.^.Basic, Basic._, Input._
-import $file.^.Bag_v1, Bag_v1._
+import $file.^.Basic
+import Basic._
+import Input._
 
-val ex = ".ex0" // 12
-val inputRaw = read(s"day02$ex")
-val lines = split("\n", inputRaw)
+val ex = ".ex0" // 161
+val inputRaw = read(s"day03$ex")
+val lines = splitOn("\n")(inputRaw)
 
 type LINE = String
 var prime = Vector.empty[LINE]
@@ -29,20 +30,21 @@ require(countRest == 0)
 type RESULT = BigInt
 
 def run(): RESULT = {
-  var r2: RESULT = 0
-  var r3: RESULT = 0
+  var r: RESULT = 0
   prime.zipWithIndex.foreach {
     case (p, _) =>
-      val b = Bag.of(p.toList)
-      if (b.values().exists(v => v == 3)) {
-        r3 = r3 + 1
+      val s = splitOn("mul")(p).drop(1)
+
+      var sum = BigInt(0)
+      s.foreach {
+        case s"($a,$b)$_" if a.forall(_.isDigit) && b.forall(_.isDigit) =>
+          sum = sum + (BigInt(a) * BigInt(b))
+        case _ =>
       }
 
-      if (b.values().exists(v => v == 2)) {
-        r2 = r2 + 1
-      }
+      r = r + sum
   }
-  r2 * r3
+  r
 }
 
 println(run())

@@ -1,7 +1,7 @@
 import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
 import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grids, Grids._
+import $file.^.Grid_v0, Grid_v0._
 
 val ex = ".grid"
 val inputRaw = read(s"day0$ex")
@@ -14,6 +14,8 @@ val lines = split("\n", input)
 
 case class POINT(x: BigInt, y: BigInt) extends Point {
   override def of(ax: BigInt, ay: BigInt) = POINT(ax, ay)
+
+  override def withXY(x: BigInt, y: BigInt) = this.copy(x = x, y = y)
 }
 
 type VALUE = Char
@@ -27,10 +29,10 @@ def visit(line: String, idx: BigInt): Unit = {
       //val columns = split("\t", str)
       val columns = str
       columns.zipWithIndex.foreach {
-        case (c, x) if c != '.' =>
+        case (c, x) =>
           map = map.updated(POINT(x, y), c)
         case _ =>
-          // skip
+        // skip
       }
     case (l, i) =>
       countRest = countRest + 1

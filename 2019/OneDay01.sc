@@ -9,7 +9,6 @@ var prime = Vector.empty[LINE]
 var countRest = 0
 
 def visit(line: String, idx: BigInt): Unit = {
-  println(s"${pad(idx)}: <$line>")
   (line, idx) match {
     case (s"$str", _) =>
       val f = (BigInt(str) / 3) - 2

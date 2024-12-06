@@ -1,15 +1,16 @@
 import $file.^.Basic, Basic._, Input._
 import $file.^.Bag_v1, Bag_v1._
 
-val ex = ".ex0" // 12
-val inputRaw = read(s"day02$ex")
-val lines = split("\n", inputRaw)
+val ex = ".ex0" // 31
+val inputRaw = read(s"day01$ex")
+val lines = splitOn("\n")(inputRaw)
 
 type LINE = String
 var prime = Vector.empty[LINE]
 var countRest = 0
 
 def visit(line: String, idx: BigInt): Unit = {
+  println(s"${pad(idx)}: <$line>")
   (line, idx) match {
     case (s"$str", _) =>
       prime = prime :+ str
@@ -29,20 +30,29 @@ require(countRest == 0)
 type RESULT = BigInt
 
 def run(): RESULT = {
-  var r2: RESULT = 0
-  var r3: RESULT = 0
+  var left = List.empty[BigInt]
+  var right = List.empty[BigInt]
+
   prime.zipWithIndex.foreach {
     case (p, _) =>
-      val b = Bag.of(p.toList)
-      if (b.values().exists(v => v == 3)) {
-        r3 = r3 + 1
-      }
-
-      if (b.values().exists(v => v == 2)) {
-        r2 = r2 + 1
+      splitOn(" ")(p) match {
+        case List(a, b) =>
+          left = BigInt(a) :: left
+          right = BigInt(b) :: right
+        case _ =>
       }
   }
-  r2 * r3
+
+  left = left.sorted
+  right = right.sorted
+
+  val bag = Bag.of(right)
+  val c = left.map { l =>
+    l * bag.get(l)
+  }
+
+  c.sum
+
 }
 
 println(run())

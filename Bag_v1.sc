@@ -1,7 +1,13 @@
 
-class Bag[T](delegate: Map[T, BigInt]) {
+final class Bag[T](val delegate: Map[T, BigInt]) {
 
   override def toString = delegate.toString()
+
+  def get(element: T): BigInt = {
+    delegate.getOrElse(element, BigInt(0))
+  }
+
+  def count(element: T): BigInt = get(element)
 
   def values(): Iterable[BigInt] = {
     delegate.values
@@ -25,6 +31,7 @@ class Bag[T](delegate: Map[T, BigInt]) {
   }
 
   def add(element: T, times: BigInt = BigInt(1)): Bag[T] = {
+    require(times > 0)
     val c = delegate.getOrElse(element, BigInt(0))
     val prime = delegate.updated(element, c + times)
     new Bag[T](prime)
@@ -61,9 +68,7 @@ class Bag[T](delegate: Map[T, BigInt]) {
     }
   }
 
-  def count(element: T): BigInt = {
-    delegate.getOrElse(element, BigInt(0))
-  }
+
 }
 
 object Bag {
@@ -72,7 +77,7 @@ object Bag {
     new Bag[T](Map.empty[T, BigInt])
   }
 
-  def of[T](list: List[T]): Bag[T] = {
+  def of[T](list: Seq[T]): Bag[T] = {
     var bag = new Bag[T](Map.empty[T, BigInt])
     list.foreach { e =>
       bag = bag.add(e)
@@ -80,5 +85,3 @@ object Bag {
     bag
   }
 }
-
-

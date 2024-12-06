@@ -1,5 +1,5 @@
 import $file.Basic, Basic._
-import $file.Bags, Bags._
+import $file.Bag_v1, Bag_v1._
 
 val sub = List(0, 1, 2)
 val list = sub ++ sub ++ sub ++ sub
@@ -51,21 +51,6 @@ list.zipWithIndex.foreach {
   Range(0, 9).foreach { i =>
     println(s"i=$i: ${even(i)}")
   }
-}
-
-{
-  val str = "1234"
-  val count = str.permutations.toList
-  println(count)
-  println(count.size)
-  println(factorial(4))
-  var list = List.empty[Vector[Char]]
-  val v: Vector[Char] => Unit = { p =>
-    list = p :: list
-  }
-  permutations(4, "1234".toVector, v)
-  println(list.size)
-  println(list)
 }
 
 {

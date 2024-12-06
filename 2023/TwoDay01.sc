@@ -1,4 +1,5 @@
 import $file.^.Basic, Basic._, Input._
+import $file.^.StringHelper_v1, StringHelper_v1._
 
 val ex = ".ex1" // 281
 val inputRaw = read(s"day01$ex")
@@ -12,10 +13,10 @@ def visit(line: String, idx: BigInt): Unit = {
   println(s"${pad(idx)}: <$line>")
   (line, idx) match {
     case (s"$str", _) =>
-      val both = DIGITS.values.flatMap(_.toSet).toSet
-      val fi = toBigInt(firstMatch(str, both).get)
-      val la = toBigInt(firstMatch(str.reverse, both.map(_.reverse)).get.reverse)
-      prime = prime :+ fromDigits(fi, la)
+      val both = StringHelper.DIGITS.values.flatMap(_.toSet).toSet
+      val fi = StringHelper.toBigInt(StringHelper.firstMatch(str, both).get)
+      val la = StringHelper.toBigInt(StringHelper.firstMatch(str.reverse, both.map(_.reverse)).get.reverse)
+      prime = prime :+ StringHelper.fromDigits(fi, la)
     case (l, i) =>
       countRest = countRest + 1
       println(s"REST ${pad(i)}: <$l>")
