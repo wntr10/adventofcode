@@ -1,6 +1,6 @@
 import $file.^.Basic, Basic._, Input._
 import $file.^.StringHelper_v1, StringHelper_v1._
-import $file.^.Grid_v1, Grid_v1._
+import $file.^.Grid_v1, Grid_v1._ // TODO: Upgrade to v2
 
 val ex = ".ex0" // 18
 val inputRaw = read(s"day04$ex")

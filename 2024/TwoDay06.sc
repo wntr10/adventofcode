@@ -1,5 +1,5 @@
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grid_v1, Grid_v1._
+import $file.^.Grid_v2, Grid_v2._
 
 val ex = ".ex0" // 6
 val inputRaw = read(s"day06$ex")

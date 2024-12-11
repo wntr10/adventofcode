@@ -2,7 +2,7 @@ import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
 import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
 import $file.^.Bag_v1, Bag_v1._
-import $file.^.Grid_v1, Grid_v1._
+import $file.^.Grid_v2, Grid_v2._
 import $file.^.StringHelper_v1, StringHelper_v1._
 
 val ex = ".lines"

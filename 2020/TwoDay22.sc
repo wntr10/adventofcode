@@ -8,17 +8,11 @@ val parts = split("Player ", input)
 var players = Vector.empty[Vector[Int]]
 parts.foreach { partRaw =>
   var list = Vector.empty[Int]
-
-  // Scala string interpolation cannot handle escaped characters
-  require(!partRaw.contains("%"))
-  val part = partRaw.replace('"', '%')
-  val lines = split("\n", part)
+  val lines = splitOn("\n")(partRaw)
   val id = lines.head.dropRight(1).toInt
-  println(id)
   lines.drop(1).foreach { str =>
     list = list :+ str.toInt
   }
-  println(list)
   players = players :+ list
 }
 

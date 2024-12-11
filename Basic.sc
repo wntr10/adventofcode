@@ -1,9 +1,10 @@
 import com.google.common.base.{Charsets, Splitter}
+import com.google.common.collect.Iterables
 import com.google.common.io.Files
 
 import java.io.File
 import scala.annotation.tailrec
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.jdk.CollectionConverters._
 
 object Input {
   def read(name: String): String = {
@@ -23,6 +24,10 @@ object Input {
       .toList
 
   }
+}
+
+def cycle(list: List[Int]): Iterator[Int] = {
+  Iterables.cycle(list.asJava).iterator().asScala
 }
 
 def distance(a: String, b: String): BigInt = {

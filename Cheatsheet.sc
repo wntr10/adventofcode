@@ -1,5 +1,8 @@
-import $file.Basic, Basic._
-import $file.Bag_v1, Bag_v1._
+import $file.Basic
+import Basic._
+import $file.Bag_v1
+import Bag_v1._
+import $file.BigIntHelper_v1, BigIntHelper_v1.BigIntHelper.vec
 
 val sub = List(0, 1, 2)
 val list = sub ++ sub ++ sub ++ sub
@@ -89,4 +92,23 @@ list.zipWithIndex.foreach {
   println(bag.count('a'))
   bag = bag.del('a', 3)
   println(bag.count('a'))
+}
+
+{
+  vec(-1, 0, 1).foreach { dy =>
+    vec(-1, 0, 1).foreach { dx =>
+      if (dy.abs != dx.abs) {
+        println(" " + dy + " " + dx)
+
+      }
+    }
+  }
+}
+
+
+{
+  val l0 = List(1, 2, 3)
+  val l1 = List(9, 8, 7, 6, 5)
+  println(l0.zip(l1))
+
 }
