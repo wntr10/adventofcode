@@ -92,3 +92,28 @@ import Grid_v2._
 
 
 }
+
+{
+  var g = G.empty(vec(9), BigInt(0))
+  Range(0, g.size.toInt).foreach { v =>
+    g = g.updated(v)(v)
+  }
+  println(g)
+  g.log()
+  println(g(0))
+  println(g(8))
+  println(g(-1))
+}
+
+{
+  var g = G.empty(vec(2, 9), BigInt(0))
+  Range(0, g.size.toInt).foreach { v =>
+    g = g.updated(v)(v)
+  }
+  println(g)
+  g.log()
+  println(g(0))
+  println(g(8))
+  println(g(17))
+  println(g(-1))
+}

@@ -53,7 +53,7 @@ case class Antenna(id: Char, set: Set[BigPoint]) {
           val nna = P(a.x - dx, a.y - dy)
           val nnb = P(b.x + dx, b.y + dy)
 
-          re = re ++ Set(nna, nnb).filter(an => grid.intersection(an.y, an.x))
+          re = re ++ Set(nna, nnb).filter(an => grid.contains(an.y, an.x))
         }
       }
     }

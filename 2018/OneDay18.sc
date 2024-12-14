@@ -1,8 +1,10 @@
 import $file.^.Basic
 import Basic._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v2
+import Grid_v2._
 import Basic.Input.{read, splitOn}
-
+import $file.^.BigIntHelper_v1
+import BigIntHelper_v1.BigIntHelper.vec
 
 val ex = ".ex0" // 1147
 val inputRaw = read(s"day18$ex")
@@ -35,6 +37,20 @@ require(countRest == 0)
 
 var grid = G(prime, maxColumns, '.').trim()
 
+def neighbors(p: BigPoint): Set[BigPoint] = {
+  var set = Set.empty[BigPoint]
+  vec(-1, 0, 1).foreach { dy =>
+    vec(-1, 0, 1).foreach { dx =>
+      val n = P(p.x + dx, p.y + dy)
+      if (p != n && grid.contains(n.y, n.x)) {
+        set = set + n
+      }
+    }
+  }
+  set
+}
+
+
 def resourceValue(grid: BigGrid[Char]): Int = {
   grid.findAll('|').size * grid.findAll('#').size
 }
@@ -61,11 +77,11 @@ while (!stop) {
   println("resourceValue: " + resourceValue(grid))
 
   var world = grid.delegate.keys
-  world = world ++ world.flatMap(p => grid.neighbors8(p))
+  world = world ++ world.flatMap(neighbors)
 
   var prime = empty
   world.foreach { e =>
-    val (o, t, l) = ctx(grid)(grid.neighbors8(e))
+    val (o, t, l) = ctx(grid)(neighbors(e))
     val pp = (grid(e.y, e.x), o, t, l) match {
       case ('.', _, tc, _) if tc >= 3 => '|'
       case ('.', _, _, _) => '.'

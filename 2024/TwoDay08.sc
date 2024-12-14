@@ -52,13 +52,13 @@ case class Antenna(id: Char, set: Set[BigPoint]) {
 
           re = re + P(a.x, a.y)
           var nna = P(a.x - dx, a.y - dy)
-          while (grid.intersection(nna.y, nna.x)) {
+          while (grid.contains(nna.y, nna.x)) {
             re = re + nna
             nna = P(nna.x - dx, nna.y - dy)
           }
 
           var nnb = P(a.x + dx, a.y + dy)
-          while (grid.intersection(nnb.y, nnb.x)) {
+          while (grid.contains(nnb.y, nnb.x)) {
             re = re + nnb
             nnb = P(nnb.x + dx, nnb.y + dy)
           }

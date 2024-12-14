@@ -1,6 +1,4 @@
 import $ivy.`com.lihaoyi:fansi_2.13:0.5.0`
-import $file.BigIntHelper_v1
-import BigIntHelper_v1.BigIntHelper.vec
 
 trait BigRange {
   def lower: BigInt
@@ -38,7 +36,12 @@ trait BigPoint {
 
   def w: BigInt = 0
 
-  def component(d: Int): BigInt
+  def component(d: Int): BigInt = d match {
+    case 0 => x
+    case 1 => y
+    case 2 => z
+    case 3 => w
+  }
 
   def add(offset: BigInt*): BigPoint
 }
@@ -74,8 +77,6 @@ trait BigGrid[T] {
 
   def contains(p: BigInt*): Boolean
 
-  def intersection(p: BigInt*): Boolean
-
   def updated(p: BigInt*)(v: T): BigGrid[T]
 
   def log(): Unit
@@ -85,10 +86,6 @@ trait BigGrid[T] {
   def find(e: T): Option[BigPoint]
 
   def findAll(e: T): Vector[BigPoint]
-
-  def neighbors4(p: BigPoint): Set[BigPoint]
-
-  def neighbors8(p: BigPoint): Set[BigPoint]
 
 }
 
@@ -164,6 +161,7 @@ case class P(override val x: BigInt = 0,
     case Seq(oz, oy, ox) => P(x = x + ox, y = y + oy, z = z + oz)
     case Seq(ow, oz, oy, ox) => P(x = x + ox, y = y + oy, z = z + oz, w = w + ow)
   }
+
 }
 
 case class G[T](override val delegate: Map[BigPoint, T],
@@ -179,13 +177,38 @@ case class G[T](override val delegate: Map[BigPoint, T],
     }
   }
 
+  private def adapt(p: Seq[BigInt]): Seq[BigInt] = {
+    p match {
+      case Seq(x) if shape.size == 1 && x >= 0 =>
+        p
+      case Seq(x) if shape.size == 1 =>
+        Seq(shape(0) + x)
+      case Seq(x) if shape.size == 2 && x >= 0 =>
+        Seq(x / shape(1), x % shape(1))
+      case Seq(x) if shape.size == 2 =>
+        val prime = size + x
+        Seq(prime / shape(1), prime % shape(1))
+      case Seq(y, x) if shape.size == 2 =>
+        val yPrime = if (y >= 0) y else shape(0) + y
+        val xPrime = if (x >= 0) x else shape(1) + x
+        Seq(yPrime, xPrime)
+    }
+  }
+
   override def toString = s"G(size=$size,shape=$shape,zero=<$zero>,#=${delegate.size})"
 
   override def log(): Unit = {
     println("--")
-    rows(Vector.empty).zipWithIndex.foreach {
-      case (r, i) =>
-        println(s"$r |$i")
+    if (shape.size == 1) {
+      Range(0, shape(0).toInt).foreach { i =>
+        print(apply(i))
+      }
+      println()
+    } else {
+      rows(Vector.empty).zipWithIndex.foreach {
+        case (r, i) =>
+          println(s"$r |$i")
+      }
     }
   }
 
@@ -198,16 +221,8 @@ case class G[T](override val delegate: Map[BigPoint, T],
   }
 
   override def apply(p: BigInt*): T = {
-    p match {
-      case Seq(x) if shape.size == 1 =>
-        delegate.getOrElse(of(x), zero)
-      case Seq(x) if shape.size == 2 =>
-        delegate.getOrElse(of(x / shape(1), x % shape(1)), zero)
-      case Seq(y, x) if shape.size == 2 =>
-        delegate.getOrElse(of(y, x), zero)
-    }
+    delegate.getOrElse(of(adapt(p): _*), zero)
   }
-
 
   def rows(path: Vector[BigPoint]): Vector[String] = {
     var result = Vector.empty[String]
@@ -285,26 +300,14 @@ case class G[T](override val delegate: Map[BigPoint, T],
   }
 
   override def updated(p: BigInt*)(v: T): BigGrid[T] = {
-    val prime = p match {
-      case Seq(x) if shape.size == 1 && x >= 0 && x < size =>
-        delegate.updated(of(x), v)
-      case Seq(x) if shape.size == 2 && x >= 0 && x < size =>
-        delegate.updated(of(x / shape(1), x % shape(1)), v)
-      case Seq(y, x) if shape.size == 2 && x >= 0 && x < shape(1) && y >= 0 && y <= shape(0) =>
-        delegate.updated(of(y, x), v)
-      case _ =>
-        delegate
-    }
-    this.copy(delegate = prime)
+    this.copy(delegate = delegate.updated(of(adapt(p): _*), v))
   }
 
   override def trim(): BigGrid[T] = this.copy(delegate = delegate.filter(e => e._2 != zero))
 
   override def clear: BigGrid[T] = this.copy(delegate = Map.empty)
 
-  override def contains(p: BigInt*): Boolean = apply(p: _*) != zero
-
-  override def intersection(p: BigInt*): Boolean = {
+  override def contains(p: BigInt*): Boolean = {
     p.zip(shape).forall {
       case (c, b) if c >= 0 && c < b => true
       case _ => false
@@ -362,36 +365,6 @@ case class G[T](override val delegate: Map[BigPoint, T],
   override def findAll(e: T): Vector[BigPoint] = {
     delegate.filter(me => me._2 == e).keys.toVector
   }
-
-  override def neighbors8(p: BigPoint): Set[BigPoint] = {
-    var ns = Set.empty[BigPoint]
-    vec(-1, 0, 1).foreach { dx =>
-      vec(-1, 0, 1).foreach { dy =>
-        val n = P(p.x + dx, p.y + dy)
-        if (n != p && intersection(n.y, n.x)) {
-          ns = ns + n
-        }
-      }
-    }
-    require(ns.size <= 8)
-    ns
-  }
-
-  override def neighbors4(p: BigPoint): Set[BigPoint] = {
-    var ns = Set.empty[BigPoint]
-    vec(-1, 0, 1).foreach { dx =>
-      vec(-1, 0, 1).foreach { dy =>
-        if (dx.abs != dy.abs) {
-          val n = P(p.x + dx, p.y + dy)
-          if (intersection(n.y, n.x)) {
-            ns = ns + n
-          }
-        }
-      }
-    }
-    require(ns.size <= 4)
-    ns
-  }
 }
 
 object G {
@@ -415,4 +388,5 @@ object G {
     }
     new G(map, Vector(lines.length, maxColumns), zero)
   }
+
 }
