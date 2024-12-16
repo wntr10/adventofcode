@@ -1,4 +1,4 @@
-
+// adapted from org.apache.commons.math3
 
 final case class BigVector(x: BigDecimal, y: BigDecimal) {
   def vectorTo(v: BigVector): BigVector = {
@@ -60,6 +60,11 @@ final case class BigLine(direction: BigVector, originOffset: BigDecimal) {
     direction.dot(point)
   }
 
+  def contains(point: BigVector): Boolean = {
+    //println(offset(point))
+    offset(point).abs < 0.00000001
+  }
+
   def intersection(other: BigLine): Option[BigVector] = {
     val area = this.direction.signedArea(other.direction)
     if (area == 0) {
@@ -90,7 +95,7 @@ object BigLine {
     BigRay(line, startPoint)
   }
 
-  private def fromPointAndDirection(pt: BigVector, dir: BigVector): BigLine = {
+  def fromPointAndDirection(pt: BigVector, dir: BigVector): BigLine = {
     val normalizedDir = dir.normalize()
     val originOffset = normalizedDir.signedArea(pt)
     new BigLine(normalizedDir, originOffset)

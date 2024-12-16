@@ -40,6 +40,15 @@ import scala.util.Random
   }
   o.log()
 
+  val zero = BigDecimal(0)
+  for (y <- 0 until 20) {
+    for (x <- 0 until 20) {
+      if (lineAB.contains(BigVector.of(x, y))) {
+        o = o.updated(y, x)('o')
+      }
+    }
+  }
+  o.log()
 
 
 }
