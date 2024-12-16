@@ -1,4 +1,5 @@
-// adapted from org.apache.commons.math3
+// adapted from apache commons-geometry
+// https://github.com/apache/commons-geometry/blob/master/commons-geometry-euclidean/src/main/java/org/apache/commons/geometry/euclidean/twod/Line.java
 
 final case class BigVector(x: BigDecimal, y: BigDecimal) {
   def vectorTo(v: BigVector): BigVector = {
@@ -54,20 +55,23 @@ final case class BigRay(line: BigLine, startPoint: BigVector) {
   }
 }
 
-final case class BigLine(direction: BigVector, originOffset: BigDecimal) {
+final case class BigLine(direction: BigVector, originOffset: BigDecimal, tolerance: BigDecimal = BigLine.DEFAULT_TOLERANCE) {
+
+  lazy val angle: BigDecimal = {
+    Math.atan2(direction.x.toDouble, direction.y.toDouble)
+  }
 
   def abscissa(point: BigVector): BigDecimal = {
     direction.dot(point)
   }
 
   def contains(point: BigVector): Boolean = {
-    //println(offset(point))
-    offset(point).abs < 0.00000001
+    offset(point).abs < tolerance
   }
 
   def intersection(other: BigLine): Option[BigVector] = {
     val area = this.direction.signedArea(other.direction)
-    if (area == 0) {
+    if (area.abs < tolerance) {
       None
     } else {
       val x = BigVector.linearCombination(
@@ -86,6 +90,9 @@ final case class BigLine(direction: BigVector, originOffset: BigDecimal) {
 }
 
 object BigLine {
+
+  val DEFAULT_TOLERANCE = BigDecimal(1.0e-10)
+
   def fromPoints(p1: BigVector, p2: BigVector): BigLine = {
     fromPointAndDirection(p1, p1.vectorTo(p2))
   }
