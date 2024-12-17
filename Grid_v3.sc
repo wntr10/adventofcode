@@ -1,4 +1,7 @@
 import $ivy.`com.lihaoyi:fansi_2.13:0.5.0`
+import com.google.common.collect.Iterables
+
+import scala.jdk.CollectionConverters.{IterableHasAsJava, IteratorHasAsScala}
 
 
 final case class R(lower: BigInt, upper: BigInt) {
@@ -152,11 +155,13 @@ final case class G[T](delegate: Map[P, T],
     delegate.getOrElse(of(adapt(p): _*), zero)
   }
 
-  private val colorList = List(fansi.Underlined.On, fansi.Color.Blue, fansi.Color.Red, fansi.Color.Green, fansi.Color.Yellow, fansi.Color.Magenta)
+  private val colorList = List(fansi.Color.Blue, fansi.Color.Red, fansi.Color.Green, fansi.Color.Yellow, fansi.Color.Magenta)
+
+  private val it = Iterables.cycle(colorList.asJava).iterator().asScala
 
   def rows(colors: Seq[Set[P]] = Seq.empty): Vector[String] = {
 
-    val idx = colors.zip(colorList)
+    val idx = colors.zip(it)
     var result = Vector.empty[String]
 
     val minY = BigInt(0)
