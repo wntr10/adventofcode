@@ -1,5 +1,5 @@
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 import $file.^.Voxel_v1, Voxel_v1._
 import $file.^.BigVector_v1
 import BigVector_v1._
@@ -42,7 +42,7 @@ grid.log()
 var gp = grid.clear
 var asteroids = grid.delegate.keySet
 
-var best: BigPoint = P(0, 0)
+var best = P()
 var bestDetect = BigInt(0)
 
 asteroids.foreach { a =>
@@ -95,11 +95,11 @@ def normAngle(a: Double): Double = {
   p
 }
 
-def manhattan(a: BigPoint, b: BigPoint): BigInt = {
+def manhattan(a: P, b: P): BigInt = {
   (b.y - a.y).abs + (b.x - a.x).abs
 }
 
-final case class ASTEROID(laser: BigPoint, p: BigPoint) {
+final case class ASTEROID(laser: P, p: P) {
   val line = BigLine.fromPoints(BigVector.of(laser.x.toInt, laser.y.toInt), BigVector.of(p.x.toInt, p.y.toInt))
   val up = BigLine.fromPoints(BigVector.of(laser.x.toInt, laser.y.toInt), BigVector.of(laser.x.toInt, 0))
   val angle = normAngle(up.angle.toDouble.toDegrees - line.angle.toDouble.toDegrees)

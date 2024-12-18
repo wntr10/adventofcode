@@ -1,5 +1,5 @@
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 
 val ex = ".ex0" // 41
 val inputRaw = read(s"day06$ex")
@@ -9,7 +9,7 @@ type VALUE = Char
 var map = Map.empty[P, VALUE]
 var countRest = 0
 
-var start = P(0, 0)
+var start = P()
 
 def visit(line: String, idx: BigInt): Unit = {
   (line, idx) match {
@@ -48,13 +48,13 @@ def run(): Boolean = {
 
     val lookahead = direction match {
       case 0 =>
-        pos.copy(y = pos.y - 1)
+        pos.add(-1, 0)
       case 1 =>
-        pos.copy(x = pos.x + 1)
+        pos.add(0, 1)
       case 2 =>
-        pos.copy(y = pos.y + 1)
+        pos.add(1, 0)
       case 3 =>
-        pos.copy(x = pos.x - 1)
+        pos.add(0, -1)
     }
     val n = map.getOrElse(lookahead, '$')
     n match {
@@ -63,7 +63,7 @@ def run(): Boolean = {
       case '.' =>
         pos = lookahead
       case _ =>
-        direction = (direction + 1) % 4
+        direction = (direction + 1) & 3
     }
   }
   false

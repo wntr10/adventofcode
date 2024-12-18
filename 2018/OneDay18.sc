@@ -1,7 +1,7 @@
 import $file.^.Basic
 import Basic._
-import $file.^.Grid_v2
-import Grid_v2._
+import $file.^.Grid_v3
+import Grid_v3._
 import Basic.Input.{read, splitOn}
 import $file.^.BigIntHelper_v1
 import BigIntHelper_v1.BigIntHelper.vec
@@ -23,7 +23,7 @@ def visit(line: String, idx: BigInt): Unit = {
       prime = prime :+ l
       maxColumns = Math.max(maxColumns, l.length)
     case (l, i) =>
-      countRest = countRest + 1
+      countRest += 1
       println(s"REST ${pad(i)}: <$l>")
   }
 }
@@ -37,12 +37,12 @@ require(countRest == 0)
 
 var grid = G(prime, maxColumns, '.').trim()
 
-def neighbors(p: BigPoint): Set[BigPoint] = {
-  var set = Set.empty[BigPoint]
+def neighbors(p: P): Set[P] = {
+  var set = Set.empty[P]
   vec(-1, 0, 1).foreach { dy =>
     vec(-1, 0, 1).foreach { dx =>
       val n = P(p.x + dx, p.y + dy)
-      if (p != n && grid.contains(n.y, n.x)) {
+      if (p != n && grid.isInBounds(n)) {
         set = set + n
       }
     }
@@ -51,13 +51,13 @@ def neighbors(p: BigPoint): Set[BigPoint] = {
 }
 
 
-def resourceValue(grid: BigGrid[Char]): Int = {
+def resourceValue(grid: G[Char]): Int = {
   grid.findAll('|').size * grid.findAll('#').size
 }
 
-def ctx(grid: BigGrid[Char])(ns: Set[BigPoint]): (Int, Int, Int) = {
+def ctx(grid: G[Char])(ns: Set[P]): (Int, Int, Int) = {
   // .toList since we need to count
-  val mm = ns.toList.map(p => grid(p.y, p.x))
+  val mm = ns.toList.map(p => grid.get(p))
   val o = mm.count(p => p == '.')
   val t = mm.count(p => p == '|')
   val l = mm.count(p => p == '#')

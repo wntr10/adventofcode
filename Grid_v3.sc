@@ -1,6 +1,9 @@
 import $ivy.`com.lihaoyi:fansi_2.13:0.5.0`
 import com.google.common.collect.Iterables
+import com.google.common.io.Files
 
+import java.io.File
+import java.nio.charset.Charset
 import scala.jdk.CollectionConverters.{IterableHasAsJava, IteratorHasAsScala}
 
 
@@ -24,6 +27,8 @@ final case class R(lower: BigInt, upper: BigInt) {
   }
 
   override def toString = s"[$lower..$upper)"
+
+  def singleton: Boolean = lower + 1 == upper
 
   def contains(e: BigInt): Boolean = e >= lower && e < upper
 
@@ -91,6 +96,21 @@ final case class G[T](delegate: Map[P, T],
 
   def get(p: P): T = delegate.getOrElse(p, zero)
 
+  def map(f: T => T): G[T] = {
+    val prime = delegate.map { e =>
+      e._1 -> f(e._2)
+    }
+    copy(delegate = prime)
+  }
+
+  //
+
+  def isVector: Boolean = {
+    if (shape.size != 2) return false
+    val set = shape.toSet
+    set.size == 2 && set.contains(1)
+  }
+
   private def of(p: BigInt*): P = {
     p match {
       case Seq(x) => P(x = x)
@@ -133,6 +153,10 @@ final case class G[T](delegate: Map[P, T],
           println(s"$r |$i")
       }
     }
+  }
+
+  def write(f: File): Unit = {
+    Files.asCharSink(f, Charset.defaultCharset()).write(rows().mkString("\n"))
   }
 
   def log(path: Vector[P]): Unit = {
@@ -194,6 +218,55 @@ final case class G[T](delegate: Map[P, T],
     result
   }
 
+  def invertX(): G[T] = {
+    require(shape.size == 2)
+    if (shape(1) == 0) return this
+    var prime = delegate.filter(e => isInBounds(e._1))
+    val maxX = shape(1) - 1
+    prime = prime.map { e =>
+      (e._1.copy(x = maxX - e._1.x), e._2)
+    }
+    copy(delegate = prime)
+  }
+
+
+  def invertY(): G[T] = {
+    require(shape.size == 2)
+    if (shape(0) == 0) return this
+    var prime = delegate.filter(e => isInBounds(e._1))
+    val maxY = shape(0) - 1
+    prime = prime.map { e =>
+      (e._1.copy(y = maxY - e._1.y), e._2)
+    }
+    copy(delegate = prime)
+  }
+
+  private def swap(v: Vector[BigInt], a: Int, b: Int): Vector[BigInt] = {
+    v.updated(a, v(b)).updated(b, v(a))
+  }
+
+  def swapXY(): G[T] = {
+    require(shape.size == 2)
+    var prime = delegate.filter(e => isInBounds(e._1))
+    prime = prime.map { e =>
+      (e._1.copy(x = e._1.y, y = e._1.x), e._2)
+    }
+    copy(delegate = prime, shape = swap(shape, 0, 1))
+  }
+
+  def rotate(): G[T] = {
+    require(shape.size == 2)
+    var prime = delegate.filter(e => isInBounds(e._1))
+    prime = prime.map { e =>
+      (e._1.copy(x = e._1.y, y = e._1.x), e._2)
+    }
+    copy(delegate = prime)
+  }
+
+  def minus(other: G[T]): G[T] = {
+    this.copy(delegate = delegate.filter(e => !other.delegate.contains(e._1)))
+  }
+
   def ||(other: G[T]): G[T] = {
     var prime = delegate
     other.delegate.foreach {
@@ -247,7 +320,9 @@ final case class G[T](delegate: Map[P, T],
 
   def clear: G[T] = this.copy(delegate = Map.empty)
 
-  def contains(p: BigInt*): Boolean = {
+  def isInBounds(p: P): Boolean = isInBounds(p.y, p.x)
+
+  def isInBounds(p: BigInt*): Boolean = {
     p.zip(shape).forall {
       case (c, b) if c >= 0 && c < b => true
       case _ => false
@@ -263,10 +338,7 @@ final case class G[T](delegate: Map[P, T],
 
     if (axis == 0 || axis == 1) {
       val offsets = other.shape.map(_ => BigInt(0)).updated(axis, shape(axis))
-      println(other.delegate)
-      println(offsets)
       val prime = other.delegate.map(e => (e._1.add(offsets: _*), e._2))
-      println(prime)
       this.copy(delegate = delegate ++ prime, shape = shapePrime)
     } else {
       other

@@ -1,10 +1,8 @@
-import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic
 import Basic.Input._
 import $file.^.Bag_v1, Bag_v1._
 
-val ex = ".ex0" // 5
+val ex = ".ex0" // 5; mxmxvkd,sqjhc,fvjkl
 
 val input = read(s"day21$ex")
 val lines = split("\n", input)
@@ -25,7 +23,7 @@ lines.foreach {
       reverse = reverse.updated(allergen, y.intersect(ingredients.toSet))
     }
   case r =>
-    rest = rest + 1
+    rest += 1
     println(s"!<$r>")
 }
 

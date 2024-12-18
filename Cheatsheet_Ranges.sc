@@ -1,6 +1,5 @@
-import $file.Grid_v2
-import Grid_v2._
-
+import $file.Grid_v3
+import Grid_v3._
 
 {
   val r0 = R(0, 10)

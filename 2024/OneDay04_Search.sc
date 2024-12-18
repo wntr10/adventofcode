@@ -1,6 +1,12 @@
-import $file.^.Basic, Basic._, Input._
-import $file.^.StringHelper_v1, StringHelper_v1._
-import $file.^.Grid_v1, Grid_v1._ // TODO: Upgrade to v2
+import $file.^.Basic
+import Basic._
+import Input._
+import $file.^.Grid_v3
+import Grid_v3._
+import $file.^.BigIntHelper_v1
+import BigIntHelper_v1.BigIntHelper.vec
+
+import scala.annotation.tailrec
 
 val ex = ".ex0" // 18
 val inputRaw = read(s"day04$ex")
@@ -33,24 +39,41 @@ require(countRest == 0)
 println(s"#lines: ${prime.size}")
 println(s"#columns: $maxColumns")
 
-val grid = G(prime, maxColumns, '_')
+val grid = G(prime, maxColumns, '.').trim()
 
-type RESULT = BigInt
+def run(): Seq[Set[P]] = {
+  var r = Seq.empty[Set[P]]
 
-def run(): RESULT = {
-  var r: RESULT = 0
+  @tailrec
+  def search(p: P, dx: BigInt, dy: BigInt, str: Vector[Char], trace: Set[P] = Set.empty): Set[P] = {
+    if (!grid.isInBounds(p) || str.isEmpty) return Set.empty
 
-  def search(s: String): Unit = {
-    r = r + StringHelper.count(s, "XMAS")
-    r = r + StringHelper.count(s, "XMAS".reverse)
+    val c = grid.get(p)
+    str match {
+      case h +: _ if h != c =>
+        Set.empty
+      case Vector(_) =>
+        trace + p
+      case _ =>
+        search(p.add(dy, dx), dx, dy, str.drop(1), trace + p)
+    }
   }
 
-  grid.rows.foreach(search)
-  grid.columns.foreach(search)
-  grid.diagonal1.foreach(search)
-  grid.diagonal2.foreach(search)
+  grid.findAll('X').foreach { p =>
+    vec(-1, 0, 1).foreach { dy =>
+      vec(-1, 0, 1).foreach { dx =>
+        if (Set(dx, dy) != Set(0)) {
+          r = r :+ search(p, dx, dy, "XMAS".toVector)
+        }
+      }
+    }
+  }
 
   r
 }
 
-println(run())
+val rs = run().filter(_.nonEmpty)
+
+grid.logWithColors(rs: _*)
+
+println(rs.size)

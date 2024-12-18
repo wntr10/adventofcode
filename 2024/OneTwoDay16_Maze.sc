@@ -1,8 +1,8 @@
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2
-import Grid_v2._
+import $file.^.Grid_v3
+import Grid_v3._
 import scala.collection.immutable.SortedMap
 
 //val ex = ".ex0" // 7036 45
@@ -44,27 +44,28 @@ grid = grid.updated(end.y, end.x)('.')
 grid = grid.updated(start.y, start.x)('.')
 
 println(grid)
+println(s"$start -> $end")
 
 // we use the z component for direction
-def norm(p: BigPoint): BigPoint = p.asInstanceOf[P].copy(z = 0)
+def norm(p: P): P = p.copy(z = 0)
 
-final case class E(prev: Set[BigPoint], g: BigInt, done: Boolean = false) {
+final case class E(prev: Set[P], g: BigInt, done: Boolean = false) {
   def close(): E = {
     require(!done)
     copy(done = true)
   }
 }
 
-final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoint]]) {
+final case class B(cost: Map[P, E], queue: SortedMap[BigInt, List[P]]) {
 
-  def path(to: BigPoint): Set[BigPoint] = {
+  def path(to: P): Set[P] = {
 
-    def pathRec(to: BigPoint, pa: Set[BigPoint]): Set[BigPoint] = {
+    def pathRec(to: P, pa: Set[P]): Set[P] = {
       val ce = cost(to)
       if (ce.prev == Set(to)) return pa + norm(to)
       var cp = pa + norm(to)
       ce.prev.foreach { pr =>
-        cp = cp ++ pathRec(pr, pa)
+        cp ++= pathRec(pr, pa)
       }
       cp
     }
@@ -72,7 +73,10 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
     pathRec(to, Set.empty)
   }
 
-  def next(): (B, Option[(BigInt, BigPoint)]) = {
+  def next(): (B, Option[(BigInt, P)]) = {
+    //println(queue)
+    //println(cost)
+
     var q = queue
     while (q.nonEmpty) {
       var (c, candidates) = q.head
@@ -92,7 +96,7 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
     (copy(queue = q), None)
   }
 
-  def merge(prev: BigPoint, g: BigInt, p: BigPoint): B = {
+  def merge(prev: P, g: BigInt, p: P): B = {
     var costPrime = cost
     var queuePrime = queue
 
@@ -111,19 +115,19 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
 }
 
 def nextDir(d: BigInt): BigInt = {
-  (d + 1) % 4
+  (d + 1) & 3
 }
 
-def short(to: BigPoint)(from: BigPoint): Option[(Set[BigPoint], BigInt)] = {
+def short(to: P)(from: P): Option[(Set[P], BigInt)] = {
   val es = E(Set(from), 0)
   var b = B(Map(from -> es), SortedMap(es.g -> List(from)))
 
   while (true) {
     b.next() match {
-      case (prime, Some((cc, cp: P))) if cp.copy(z = 0) == to =>
+      case (prime, Some((cc, cp))) if norm(cp) == to =>
         b = prime
         return Some((b.path(cp), cc))
-      case (prime, Some((cc, cp: P))) =>
+      case (prime, Some((cc, cp))) =>
         b = prime
         val p1 = cp.copy(z = nextDir(cp.z))
         b = b.merge(cp, cc + 1000, p1)
@@ -139,7 +143,7 @@ def short(to: BigPoint)(from: BigPoint): Option[(Set[BigPoint], BigInt)] = {
           case 3 => cp.copy(y = cp.y - 1)
         }
 
-        if (grid(np.y, np.x) == '.') {
+        if (grid.get(norm(np)) == '.') {
           b = b.merge(cp, cc + 1, np)
         }
       case (_, _) =>
@@ -152,6 +156,7 @@ def short(to: BigPoint)(from: BigPoint): Option[(Set[BigPoint], BigInt)] = {
 
 val p2 = short(norm(end))(start)
 if (p2.isDefined) {
+  grid.logWithColors(p2.get._1)
   println(s"Part One: ${p2.get._2}")
   println(s"Part Two: ${p2.get._1.size}")
 }

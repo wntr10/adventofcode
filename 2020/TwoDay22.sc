@@ -1,5 +1,3 @@
-import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
 
 val ex = ".ex0" // 291
@@ -9,7 +7,6 @@ var players = Vector.empty[Vector[Int]]
 parts.foreach { partRaw =>
   var list = Vector.empty[Int]
   val lines = splitOn("\n")(partRaw)
-  val id = lines.head.dropRight(1).toInt
   lines.drop(1).foreach { str =>
     list = list :+ str.toInt
   }

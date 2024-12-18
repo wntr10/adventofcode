@@ -1,7 +1,7 @@
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 import $file.^.BigIntHelper_v1, BigIntHelper_v1.BigIntHelper.vec
 
 val ex = ".ex0" // 9021
@@ -82,41 +82,41 @@ val moves = map("2").flatMap(_.toVector)
 
 def move(o: P, d: Char): P = {
   d match {
-    case '<' => o.copy(x = o.x - 1)
-    case '>' => o.copy(x = o.x + 1)
-    case '^' => o.copy(y = o.y - 1)
-    case 'v' => o.copy(y = o.y + 1)
+    case '<' => o.add(0, -1)
+    case '>' => o.add(0, 1)
+    case '^' => o.add(-1, 0)
+    case 'v' => o.add(1, 0)
   }
 }
 
 def swap(from: P, to: P): Unit = {
-  val tmp = grid(to.y, to.x)
-  grid = grid.updated(to.y, to.x)(grid(from.y, from.x))
+  val tmp = grid.get(to)
+  grid = grid.updated(to.y, to.x)(grid.get(from))
   grid = grid.updated(from.y, from.x)(tmp)
 }
 
 def pushLookahead(o: P, d: Char): Boolean = {
   val lookahead = move(o, d)
-  val lc = grid(lookahead.y, lookahead.x)
+  val lc = grid.get(lookahead)
   (lc, d) match {
     case ('.', _) =>
       true
     case ('#', _) =>
       false
     case (']', '<') =>
-      pushLookahead(lookahead.copy(x = lookahead.x - 1), d)
+      pushLookahead(lookahead.add(0, -1), d)
     case ('[', '>') =>
-      pushLookahead(lookahead.copy(x = lookahead.x + 1), d)
+      pushLookahead(lookahead.add(0, 1), d)
     case ('[', _) =>
-      pushLookahead(lookahead.copy(x = lookahead.x + 1), d) && pushLookahead(lookahead, d)
+      pushLookahead(lookahead.add(0, 1), d) && pushLookahead(lookahead, d)
     case (']', _) =>
-      pushLookahead(lookahead.copy(x = lookahead.x - 1), d) && pushLookahead(lookahead, d)
+      pushLookahead(lookahead.add(0, -1), d) && pushLookahead(lookahead, d)
   }
 }
 
 def push(o: P, d: Char): Boolean = {
   val lookahead = move(o, d)
-  val lc = grid(lookahead.y, lookahead.x)
+  val lc = grid.get(lookahead)
   (lc, d) match {
     case ('#', _) =>
       false
@@ -124,7 +124,7 @@ def push(o: P, d: Char): Boolean = {
       swap(o, lookahead)
       true
     case (']', '<') =>
-      if (push(lookahead.copy(x = lookahead.x - 1), d)) {
+      if (push(lookahead.add(0, -1), d)) {
         push(lookahead, d)
         swap(o, lookahead)
         true
@@ -132,7 +132,7 @@ def push(o: P, d: Char): Boolean = {
         false
       }
     case ('[', '>') =>
-      if (push(lookahead.copy(x = lookahead.x + 1), d)) {
+      if (push(lookahead.add(0, 1), d)) {
         push(lookahead, d)
         swap(o, lookahead)
         true
@@ -140,7 +140,7 @@ def push(o: P, d: Char): Boolean = {
         false
       }
     case ('[', _) =>
-      if (pushLookahead(lookahead, d) && pushLookahead(lookahead.copy(x = lookahead.x + 1), d)) {
+      if (pushLookahead(lookahead, d) && pushLookahead(lookahead.add(0, 1), d)) {
         push(lookahead, d)
         push(lookahead.copy(x = lookahead.x + 1), d)
         swap(o, lookahead)
@@ -149,9 +149,9 @@ def push(o: P, d: Char): Boolean = {
         false
       }
     case (']', _) =>
-      if (pushLookahead(lookahead, d) && pushLookahead(lookahead.copy(x = lookahead.x - 1), d)) {
+      if (pushLookahead(lookahead, d) && pushLookahead(lookahead.add(0, -1), d)) {
         push(lookahead, d)
-        push(lookahead.copy(x = lookahead.x - 1), d)
+        push(lookahead.add(0, -1), d)
         swap(o, lookahead)
         true
       } else {
@@ -161,19 +161,19 @@ def push(o: P, d: Char): Boolean = {
 }
 
 moves.foreach { m =>
-  val pos = grid.find('@').get.asInstanceOf[P]
+  val pos = grid.find('@').get
   push(pos, m)
 }
 
 grid.log()
 
-def gps(p: BigPoint): BigInt = {
+def gps(p: P): BigInt = {
   p.y * 100 + p.x
 }
 
 var sum = BigInt(0)
 grid.findAll('[').foreach { box =>
-  sum = sum + gps(box)
+  sum += gps(box)
 }
 
 println(sum)

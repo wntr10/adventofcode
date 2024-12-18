@@ -5,7 +5,7 @@ import Basic._
 import Input._
 import $file.^.Bag_v1
 import Bag_v1._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 import $file.^.StringHelper_v1
 import StringHelper_v1._
 import $file.^.BigIntHelper_v1
@@ -71,23 +71,22 @@ println(grid.find('S'))
 
 grid.log(Vector(end, start))
 
-val directedGraph = new DefaultDirectedWeightedGraph[BigPoint, DefaultWeightedEdge](classOf[DefaultWeightedEdge])
+val directedGraph = new DefaultDirectedWeightedGraph[P, DefaultWeightedEdge](classOf[DefaultWeightedEdge])
 
 def neighbors(x: BigInt, y: BigInt): Unit = {
   val level = grid(y, x)
   vec(-1, 0, 1).foreach { dy =>
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
-        val nx = x + dx
-        val ny = y + dy
-        val levelNeighbor = grid(ny, nx)
+        val np = P(x + dx, y + dy)
+        val levelNeighbor = grid.get(np)
         //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor)")
 
         levelNeighbor match {
           case '.' => // skip
             //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor) X.")
           case nl if nl.toInt - level.toInt <= 1 =>
-            val ed = directedGraph.addEdge(P(x, y), P(nx, ny))
+            val ed = directedGraph.addEdge(P(x, y), np)
             directedGraph.setEdgeWeight(ed, 1.0)
             //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor)")
           case _ =>

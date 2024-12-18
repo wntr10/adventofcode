@@ -1,10 +1,8 @@
-import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2
-import Grid_v2._
+import $file.^.Grid_v3
+import Grid_v3._
 import $file.^.BigIntHelper_v1
 import BigIntHelper_v1.BigIntHelper.vec
 
@@ -41,20 +39,19 @@ var grid = G(prime, maxColumns, '.')
 
 grid.log()
 
-def neighbors(x: BigInt, y: BigInt): Set[BigPoint] = {
-  var nxt = Set.empty[BigPoint]
+def neighbors(x: BigInt, y: BigInt): Set[P] = {
+  var nxt = Set.empty[P]
   val level = grid(y, x)
   vec(-1, 0, 1).foreach { dy =>
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
-        val nx = x + dx
-        val ny = y + dy
-        val levelNeighbor = grid(ny, nx)
+        val np = P(x + dx, y + dy)
+        val levelNeighbor = grid.get(np)
 
         levelNeighbor match {
           case '.' =>
           case nl if (nl.toInt - 1) == level.toInt =>
-            nxt = nxt + P(nx, ny)
+            nxt += np
           case _ =>
         }
       }
@@ -65,7 +62,7 @@ def neighbors(x: BigInt, y: BigInt): Set[BigPoint] = {
 
 println(grid)
 
-def hasPath(s: BigPoint, e: BigPoint): Boolean = {
+def hasPath(s: P, e: P): Boolean = {
   if (s == e) {
     return true
   }
@@ -75,8 +72,8 @@ def hasPath(s: BigPoint, e: BigPoint): Boolean = {
   false
 }
 
-def search(s: BigPoint): Int = {
-  if (grid(s.y, s.x) == '9') {
+def search(s: P): Int = {
+  if (grid.get(s) == '9') {
     return 1
   }
   var score = 0
@@ -94,7 +91,7 @@ grid.findAll('0').foreach { a =>
   var score = BigInt(0)
   grid.findAll('9').foreach { b =>
     if (hasPath(a, b)) {
-      score = score + 1
+      score += 1
     }
   }
   sumScores = sumScores + score

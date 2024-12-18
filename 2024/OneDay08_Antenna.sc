@@ -1,6 +1,6 @@
 import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 
 val ex = ".ex0" // 14
 val inputRaw = read(s"day08$ex")
@@ -35,12 +35,12 @@ val grid = G(prime, maxColumns, '.').trim()
 
 grid.log()
 
-case class Antenna(id: Char, set: Set[BigPoint]) {
+case class Antenna(id: Char, set: Set[P]) {
 
-  def calc(): Set[BigPoint] = {
+  def calc(): Set[P] = {
 
-    var done = Set.empty[Set[BigPoint]]
-    var re = Set.empty[BigPoint]
+    var done = Set.empty[Set[P]]
+    var re = Set.empty[P]
 
     set.foreach { a =>
       set.foreach { b =>
@@ -50,10 +50,10 @@ case class Antenna(id: Char, set: Set[BigPoint]) {
           val dx = b.x - a.x
           val dy = b.y - a.y
 
-          val nna = P(a.x - dx, a.y - dy)
-          val nnb = P(b.x + dx, b.y + dy)
+          val nna = a.add(-dy, -dx)
+          val nnb = b.add(dy, dx)
 
-          re = re ++ Set(nna, nnb).filter(an => grid.contains(an.y, an.x))
+          re = re ++ Set(nna, nnb).filter(grid.isInBounds)
         }
       }
     }

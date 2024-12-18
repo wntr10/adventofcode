@@ -50,7 +50,7 @@ def search(start: BigInt, stepSize: BigInt, buses: List[(BigInt, Int)]): BigInt 
     if (allDeparting) {
       return t
     }
-    t = t + stepSize
+    t += stepSize
   }
   // never happen
   t

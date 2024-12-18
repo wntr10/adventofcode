@@ -35,9 +35,9 @@ def eval(eq: EQ)(v: Vector[Int]): Boolean = {
   var r = eq.ops.head
   eq.ops.drop(1).zip(v).foreach {
     case (o, 0) =>
-      r = r + o
+      r += o
     case (o, 1) =>
-      r = r * o
+      r *= o
     case (o, 2) =>
       r = StringHelper.fromDigits(r, o)
   }
@@ -68,10 +68,10 @@ def run(): (RESULT, RESULT) = {
       val v = eval(p)(_)
       val (e1, e2) = combinations(v, p.ops.drop(1), Vector.empty)
       if (e1) {
-        one = one + p.test
+        one += p.test
       }
       if (e2) {
-        two = two + p.test
+        two += p.test
       }
   }
   (one, two)

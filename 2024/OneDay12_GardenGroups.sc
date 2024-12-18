@@ -42,7 +42,7 @@ def flood(p: P, c: Char, done: Set[P] = Set.empty): Set[P] = {
   vec(-1, 0, 1).foreach { dy =>
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
-        val n = P(p.x + dx, p.y + dy)
+        val n = p.add(dy, dx)
         if (!current.contains(n) && grid.get(n) == c) {
           current = flood(n, c, current)
         }
@@ -59,7 +59,7 @@ def perimeter(region: Set[P]): BigInt = {
     vec(-1, 0, 1).foreach { dy =>
       vec(-1, 0, 1).foreach { dx =>
         if (dy.abs != dx.abs) {
-          val n = P(p.x + dx, p.y + dy)
+          val n = p.add(dy, dx)
           if (region.contains(n)) {
             b -= 1
           }
@@ -79,7 +79,7 @@ def numberOfSides(r: Set[P]): Map[P, Set[Int]] = {
     vec(-1, 0, 1).foreach { dy =>
       vec(-1, 0, 1).foreach { dx =>
         if (dy.abs != dx.abs) {
-          val n = P(u.x + dx, u.y + dy)
+          val n = u.add(dy, dx)
           if (!r.contains(n)) {
             b += idx
           }
@@ -100,7 +100,7 @@ def group(s: Set[BigInt]): BigInt = {
   var last = sl.head
   sl.drop(1).foreach { n =>
     if (n - last > 1) {
-      gaps = gaps + 1
+      gaps += 1
     }
     last = n
   }

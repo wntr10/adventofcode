@@ -1,7 +1,4 @@
 import $file.^.Basic, Basic._, Input._
-import $file.^.Bag_v1, Bag_v1._
-import $file.^.Grid_v2, Grid_v2._
-import $file.^.StringHelper_v1, StringHelper_v1._
 
 val ex = ".ex0" // 3, 3
 val inputRaw = read(s"day11$ex")

@@ -1,6 +1,5 @@
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 
 val ex = ".ex0" // 34
 val inputRaw = read(s"day08$ex")
@@ -35,12 +34,12 @@ val grid = G(prime, maxColumns, '.').trim()
 
 grid.log()
 
-case class Antenna(id: Char, set: Set[BigPoint]) {
+case class Antenna(id: Char, set: Set[P]) {
 
-  def calc(): Set[BigPoint] = {
+  def calc(): Set[P] = {
 
-    var done = Set.empty[Set[BigPoint]]
-    var re = Set.empty[BigPoint]
+    var done = Set.empty[Set[P]]
+    var re = Set.empty[P]
 
     set.foreach { a =>
       set.foreach { b =>
@@ -50,17 +49,17 @@ case class Antenna(id: Char, set: Set[BigPoint]) {
           val dx = b.x - a.x
           val dy = b.y - a.y
 
-          re = re + P(a.x, a.y)
-          var nna = P(a.x - dx, a.y - dy)
-          while (grid.contains(nna.y, nna.x)) {
-            re = re + nna
-            nna = P(nna.x - dx, nna.y - dy)
+          re += a
+          var nna = a.add(-dy, -dx)
+          while (grid.isInBounds(nna)) {
+            re += nna
+            nna = nna.add(-dy, -dx)
           }
 
-          var nnb = P(a.x + dx, a.y + dy)
-          while (grid.contains(nnb.y, nnb.x)) {
-            re = re + nnb
-            nnb = P(nnb.x + dx, nnb.y + dy)
+          var nnb = a.add(dy, dx)
+          while (grid.isInBounds(nnb)) {
+            re += nnb
+            nnb = nnb.add(dy, dx)
           }
         }
       }

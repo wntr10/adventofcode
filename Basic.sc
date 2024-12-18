@@ -98,7 +98,7 @@ def sqrtN(in: BigInt): BigInt = {
 }
 
 class LinearSquare(size: BigInt) {
-  private val side = sqrtN(size)
+  val side = sqrtN(size)
 
   def corners: Set[BigInt] = Set(0, side - 1, size - side, size - 1)
 

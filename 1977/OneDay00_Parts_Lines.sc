@@ -1,6 +1,10 @@
 import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
 import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
+import $file.^.Grid_v3
+import Grid_v3._
+import $file.^.BigIntHelper_v1
+import BigIntHelper_v1.BigIntHelper.vec
 
 val ex = ".parts1"
 

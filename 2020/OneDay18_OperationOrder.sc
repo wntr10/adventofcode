@@ -3,7 +3,7 @@ import $file.^.Basic
 import com.google.common.base.Splitter
 import fastparse._, NoWhitespace._
 
-val ex = ".ex0"
+val ex = ".ex0" // 26457
 
 val input = Basic.Input.read(s"day18$ex")
 
@@ -32,7 +32,7 @@ var sum = BigInt(0)
 lines.map(l => l.filter(c => !c.isWhitespace)).foreach { l =>
   val Parsed.Success(result, _) = parse(l, expr(_))
   println(l + " becomes " + result)
-  sum = sum + result
+  sum += result
 }
 
 println(sum)

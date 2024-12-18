@@ -1,6 +1,6 @@
 import $file.^.Basic, Basic._, Input._
 import $file.^.StringHelper_v1, StringHelper_v1._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 
 val ex = ".ex0" // 9
 val inputRaw = read(s"day04$ex")
@@ -57,11 +57,11 @@ def run(): RESULT = {
   def find(x: Int, y: Int, str: String): Boolean = {
     if (x + 2 >= grid.shape.head) return false
     if (y + 2 >= grid.shape.last) return false
-    grid(x, y) == str.charAt(0) &&
-      grid(x + 2, y) == str.charAt(1) &&
-      grid(x + 1, y + 1) == str.charAt(2) &&
-      grid(x, y + 2) == str.charAt(3) &&
-      grid(x + 2, y + 2) == str.charAt(4)
+    grid(y, x) == str.charAt(0) &&
+      grid(y + 2, x) == str.charAt(1) &&
+      grid(y + 1, x + 1) == str.charAt(2) &&
+      grid(y, x + 2) == str.charAt(3) &&
+      grid(y + 2, x + 2) == str.charAt(4)
   }
 
   Range(0, grid.shape.last.toInt).foreach { y =>

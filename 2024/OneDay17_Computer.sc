@@ -37,7 +37,9 @@ parts.zipWithIndex.foreach {
 
 require(countRest == 0)
 
-var register = Map.empty[String, BigInt]
+type REG = Map[String, BigInt]
+
+var register: REG = Map.empty
 
 map("1").foreach {
   case s"Register $r: $v" =>
@@ -50,99 +52,89 @@ map("2").foreach { l =>
   program = splitOn(",")(l.drop("Program: ".length)).map(_.toInt).toVector
 }
 
-def literal(operand: Int): BigInt = {
-  operand
-}
 
-def combo(operand: Int): BigInt = {
-  operand match {
-    case 0 => 0
-    case 1 => 1
-    case 2 => 2
-    case 3 => 3
-    case 4 => register("A")
-    case 5 => register("B")
-    case 6 => register("C")
-    case 7 => throw new RuntimeException()
+final class Program(init: REG) {
+
+  private var register = init
+
+  val A = "A"
+  val B = "B"
+  val C = "C"
+
+  private def literal(op: Int): BigInt = {
+    op
   }
-}
 
-var o = List.empty[BigInt]
-
-def output(value: BigInt): Unit = {
-  o = value :: o
-}
-
-def run(): Unit = {
-
-  var i = 0
-  while (true) {
-
-    if (i >= program.length) return
-
-    val opcode = program(i)
-
-    opcode match {
-      case 0 => // adv
-        val numerator = register("A")
-        i += 1
-        val denominator = BigInt(1) << combo(program(i)).toInt
-        register = register.updated("A", numerator / denominator)
-        i += 1
-      case 1 => // bxl
-        val tmp = register("B")
-        i += 1
-        val tmp2 = literal(program(i))
-        register = register.updated("B", tmp ^ tmp2)
-        i += 1
-      case 2 => // bst
-        i += 1
-        val tmp2 = combo(program(i))
-        register = register.updated("B", tmp2 % 8)
-        i += 1
-      case 3 => // jnz
-        val tmp = register("A")
-        if (tmp == 0) {
-          i += 2
-        } else {
-          // not zero
-          i += 1
-          val tmp2 = literal(program(i))
-          i = tmp2.toInt
-        }
-      case 4 => // bxc
-        val tmp = register("B")
-        i += 1
-        if (i >= program.length) return
-        val tmp2 = register("C")
-        register = register.updated("B", tmp ^ tmp2)
-        i += 1
-      case 5 => // out
-        i += 1
-        if (i >= program.length) return
-        val tmp2 = combo(program(i))
-        output(tmp2 % 8)
-        i += 1
-      case 6 => // bdv
-        val numerator = register("A")
-        i += 1
-        if (i >= program.length) return
-        val denominator = BigInt(1) << combo(program(i)).toInt
-        register = register.updated("B", numerator / denominator)
-        i += 1
-      case 7 => // cdv
-        val numerator = register("A")
-        i += 1
-        if (i >= program.length) return
-        val denominator = BigInt(1) << combo(program(i)).toInt
-        register = register.updated("C", numerator / denominator)
-        i += 1
+  private def combo(operand: Int): BigInt = {
+    operand match {
+      case 0 => 0
+      case 1 => 1
+      case 2 => 2
+      case 3 => 3
+      case 4 => register(A)
+      case 5 => register(B)
+      case 6 => register(C)
+      case 7 => throw new RuntimeException()
     }
   }
 
+  var o = List.empty[BigInt]
+
+  private def output(value: BigInt): Unit = {
+    o = value :: o
+  }
+
+  def run(): REG = {
+
+    var i = 0
+    while (i < program.length) {
+
+      val opcode = program(i)
+      val op = program(i + 1)
+
+      opcode match {
+        case 0 => // adv
+          val numerator = register(A)
+          val denominator = BigInt(1) << combo(op).toInt
+          register = register.updated(A, numerator / denominator)
+          i += 2
+        case 1 => // bxl
+          val tmp = register(B)
+          val tmp2 = literal(op)
+          register = register.updated(B, tmp ^ tmp2)
+          i += 2
+        case 2 => // bst
+          val tmp2 = combo(op)
+          register = register.updated(B, tmp2 & 7)
+          i += 2
+        case 3 if register(A) == 0 => // jnz skip
+          i += 2
+        case 3 => // jnz
+          i = literal(op).toInt
+        case 4 => // bxc
+          register = register.updated(B, register(B) ^ register(C))
+          i += 2
+        case 5 => // out
+          output(combo(op) & 7)
+          i += 2
+        case 6 => // bdv
+          val numerator = register(A)
+          val denominator = BigInt(1) << combo(op).toInt
+          register = register.updated(B, numerator / denominator)
+          i += 2
+        case 7 => // cdv
+          val numerator = register(A)
+          val denominator = BigInt(1) << combo(op).toInt
+          register = register.updated(C, numerator / denominator)
+          i += 2
+      }
+    }
+    register
+  }
 }
 
-run()
+val p = new Program(register)
+val registerPrime = p.run()
 
-register.foreach(println)
-println(o.reverse.mkString(","))
+registerPrime.foreach(println)
+println(p.o.reverse.mkString(","))

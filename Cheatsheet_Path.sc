@@ -1,8 +1,8 @@
 import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
 import $file.BigIntHelper_v1
 import BigIntHelper_v1.BigIntHelper._
-import $file.Grid_v2
-import Grid_v2._
+import $file.Grid_v3
+import Grid_v3._
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.{DefaultDirectedWeightedGraph, DefaultWeightedEdge}
 
@@ -12,23 +12,23 @@ import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.Random
 
 
-def manhattan(a: BigPoint, b: BigPoint): BigInt = {
+def manhattan(a: P, b: P): BigInt = {
   (b.y - a.y).abs + (b.x - a.x).abs
 }
 
-final case class E(prev: BigPoint, g: BigInt, f: BigInt, done: Boolean = false) {
+final case class E(prev: P, g: BigInt, f: BigInt, done: Boolean = false) {
   def close(): E = {
     require(!done)
     copy(done = true)
   }
 }
 
-final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoint]]) {
+final case class B(cost: Map[P, E], queue: SortedMap[BigInt, List[P]]) {
 
-  def path(to: BigPoint): Vector[BigPoint] = {
+  def path(to: P): Vector[P] = {
 
     @tailrec
-    def pathRec(to: BigPoint, pa: Vector[BigPoint]): Vector[BigPoint] = {
+    def pathRec(to: P, pa: Vector[P]): Vector[P] = {
       val ce = cost(to)
       if (ce.prev == to) return to +: pa
       pathRec(ce.prev, to +: pa)
@@ -37,7 +37,7 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
     pathRec(to, Vector.empty)
   }
 
-  def next(): (B, Option[(BigInt, BigPoint)]) = {
+  def next(): (B, Option[(BigInt, P)]) = {
     var q = queue
     while (q.nonEmpty) {
       var (c, candidates) = q.head
@@ -57,7 +57,7 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
     (copy(queue = q), None)
   }
 
-  def merge(prev: BigPoint, g: BigInt, f: BigInt, p: BigPoint): B = {
+  def merge(prev: P, g: BigInt, f: BigInt, p: P): B = {
     var costPrime = cost
     var queuePrime = queue
 
@@ -75,7 +75,7 @@ final case class B(cost: Map[BigPoint, E], queue: SortedMap[BigInt, List[BigPoin
 }
 
 
-def short(o: BigGrid[Char])(to: BigPoint)(from: BigPoint): Option[(Vector[BigPoint], BigInt)] = {
+def short(o: G[Char])(to: P)(from: P): Option[(Vector[P], BigInt)] = {
   val es = E(from, 0, 0)
   var b = B(Map(from -> es), SortedMap(es.f -> List(from)))
 
@@ -88,8 +88,8 @@ def short(o: BigGrid[Char])(to: BigPoint)(from: BigPoint): Option[(Vector[BigPoi
         b = prime
         vec(-1, 0, 1).foreach { dy =>
           vec(-1, 0, 1).foreach { dx =>
-            val np = P(cp.x + dx, cp.y + dy)
-            if (dy.abs != dx.abs && o.contains(np.y, np.x)) {
+            val np = cp.add(dy, dx)
+            if (dy.abs != dx.abs && o.isInBounds(np)) {
               o(np.y, np.x) match {
                 case '.' | '0' => // skip
                 case nw =>
@@ -123,13 +123,13 @@ def short(o: BigGrid[Char])(to: BigPoint)(from: BigPoint): Option[(Vector[BigPoi
   }
   o.log()
 
-  val directedGraph = new DefaultDirectedWeightedGraph[BigPoint, DefaultWeightedEdge](classOf[DefaultWeightedEdge])
+  val directedGraph = new DefaultDirectedWeightedGraph[P, DefaultWeightedEdge](classOf[DefaultWeightedEdge])
 
   def neighbors(x: BigInt, y: BigInt): Unit = {
     vec(-1, 0, 1).foreach { dy =>
       vec(-1, 0, 1).foreach { dx =>
         val np = P(x + dx, y + dy)
-        if (dy.abs != dx.abs && o.contains(np.y, np.x)) {
+        if (dy.abs != dx.abs && o.isInBounds(np)) {
           o(np.y, np.x) match {
             case '.' | '0' => // skip
             case w =>

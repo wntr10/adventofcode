@@ -57,7 +57,7 @@ def run(): RESULT = {
           onOff(rest)
       }
 
-      r = r + sum
+      r += sum
   }
   r
 }

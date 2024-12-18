@@ -1,9 +1,8 @@
-import $ivy.`org.jgrapht:jgrapht-core:1.5.2`
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic
 import Basic._, Input._
 
-val ex = ".ex1" // 2
+val ex = ".ex0" // 2
+//val ex = ".ex1" // 3
 
 val inputRaw = read(s"day19$ex")
 val input = inputRaw.replace('"', '%')
@@ -40,7 +39,7 @@ case class SEQ(seq: List[Int]) extends RULE {
       s.foreach { ts =>
         val (rm, rs) = rule.matches(ts)
         if (rm) {
-          ps = ps ++ rs
+          ps ++= rs
         }
       }
       if (ps.isEmpty) {
@@ -79,7 +78,7 @@ lines.foreach {
     val bb = split(" ", b).map(_.toInt)
     rules = rules.updated(a.toInt, SEQ(bb))
   case r =>
-    rest = rest + 1
+    rest += 1
     println(s"REST <$r>")
 }
 
@@ -90,7 +89,7 @@ val zero = rules(0)
 var count = 0
 messages.foreach { msg =>
   if (zero.full(msg)) {
-    count = count + 1
+    count += 1
   }
 }
 

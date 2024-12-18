@@ -71,7 +71,7 @@ def run(): RESULT = {
     case (p, _) =>
       val report = splitOn(" ")(p).map(e => BigInt(e))
       if (findSafeReport(report)) {
-        r = r + 1
+        r += 1
       }
   }
   r

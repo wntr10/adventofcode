@@ -1,8 +1,8 @@
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2
-import Grid_v2._
+import $file.^.Grid_v3
+import Grid_v3._
 
 import scala.collection.mutable
 
@@ -20,7 +20,7 @@ case class BOT(x: BigInt, y: BigInt, z: BigInt, r: BigInt) {
     }
   }
 
-  def intersects(rs: Vector[BigRange]): Boolean = {
+  def intersects(rs: Vector[R]): Boolean = {
     rs.zipWithIndex.map(e => e._1.distance(comp(e._2))).sum <= r
   }
 }
@@ -52,10 +52,10 @@ def run(): Unit = {
   val y = R.minMax(prime.map(_.y))
   val z = R.minMax(prime.map(_.z))
 
-  case class CANDIDATE(box: Vector[BigRange], axis: Int) {
+  case class CANDIDATE(box: Vector[R], axis: Int) {
     lazy val weight: BigInt = prime.count(n => n.intersects(box))
 
-    def component: BigRange = box(axis)
+    def component: R = box(axis)
   }
 
   implicit val ordering: Ordering[CANDIDATE] = new Ordering[CANDIDATE] {

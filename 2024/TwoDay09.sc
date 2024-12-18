@@ -52,7 +52,7 @@ var i = -1
 val s = prime.head.map { c =>
   if (file) {
     file = false
-    i = i + 1
+    i += 1
     BLOCK(Some(i), c.toString.toInt, c.toString.toInt)
   } else {
     file = true

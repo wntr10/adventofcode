@@ -1,7 +1,7 @@
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2, Grid_v2._
+import $file.^.Grid_v3, Grid_v3._
 
 //val ex = ".ex0" // 10092
 val ex = ".ex1" // 2028
@@ -68,52 +68,48 @@ val moves = map("2").flatMap(_.toVector)
 
 def move(o: P, d: Char): P = {
   val n = d match {
-    case '<' => o.copy(x = o.x - 1)
-    case '>' => o.copy(x = o.x + 1)
-    case '^' => o.copy(y = o.y - 1)
-    case 'v' => o.copy(y = o.y + 1)
+    case '<' => o.add(0, -1)
+    case '>' => o.add(0, 1)
+    case '^' => o.add(-1, 0)
+    case 'v' => o.add(1, 0)
   }
   require(o != n)
   n
 }
 
 def swap(from: P, to: P): Unit = {
-  val tmp = grid(to.y, to.x)
-  grid = grid.updated(to.y, to.x)(grid(from.y, from.x))
+  val tmp = grid.get(to)
+  grid = grid.updated(to.y, to.x)(grid.get(from))
   grid = grid.updated(from.y, from.x)(tmp)
 }
 
 def push(o: P, d: Char): Boolean = {
   val lookahead = move(o, d)
-  val lc = grid(lookahead.y, lookahead.x)
+  val lc = grid.get(lookahead)
   lc match {
     case '.' =>
       swap(o, lookahead)
       true
-    case '#' =>
+    case 'O' if push(lookahead, d) =>
+      swap(o, lookahead)
+      true
+    case _ =>
       false
-    case 'O' =>
-      if (push(lookahead, d)) {
-        swap(o, lookahead)
-        true
-      } else {
-        false
-      }
   }
 }
 
 moves.foreach { m =>
-  val pos = grid.find('@').get.asInstanceOf[P]
+  val pos = grid.find('@').get
   push(pos, m)
 }
 
-def gps(p: BigPoint): BigInt = {
+def gps(p: P): BigInt = {
   p.y * 100 + p.x
 }
 
 var sum = BigInt(0)
 grid.findAll('O').foreach { box =>
-  sum = sum + gps(box)
+  sum += gps(box)
 }
 
 println(sum)
