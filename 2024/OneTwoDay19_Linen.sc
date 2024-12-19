@@ -52,10 +52,10 @@ def check(str: String): BigInt = {
   while (rest.nonEmpty) {
     var prime = Map.empty[String, BigInt]
     rest.foreach { r =>
-      pattern.zipWithIndex.foreach { p =>
-        val isPrefix = r._1.startsWith(p._1)
+      pattern.foreach { p =>
+        val isPrefix = r._1.startsWith(p)
         if (isPrefix) {
-          r._1.drop(p._1.length) match {
+          r._1.drop(p.length) match {
             case "" =>
               cn = cn + r._2
             case n =>
