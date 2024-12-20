@@ -1,8 +1,8 @@
 import $file.^.Basic
 import Basic._
 import Input._
-import $file.^.Grid_v2
-import Grid_v2._
+import $file.^.Grid_v3
+import Grid_v3._
 import $file.^.BigIntHelper_v1
 import BigIntHelper_v1.BigIntHelper._
 
@@ -44,7 +44,7 @@ val maxY = 7
 //val maxY = 103
 
 def show(maxX: Int, maxY: Int)(robots: Set[LINE]): Unit = {
-  var map = Map.empty[BigPoint, Char]
+  var map = Map.empty[P, Char]
   Range(0, maxY).foreach { y =>
     Range(0, maxX).foreach { x =>
       val c = robots.filter(p => p.x == x && p.y == y)

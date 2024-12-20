@@ -5,23 +5,31 @@ import Basic._
 import Input._
 import $file.^.Bag_v1
 import Bag_v1._
-import $file.^.Grid_v3, Grid_v3._
+import $file.^.Grid_v3
+import Grid_v3._
 import $file.^.StringHelper_v1
 import StringHelper_v1._
 import $file.^.BigIntHelper_v1
-import BigIntHelper_v1.BigIntHelper.vec
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath
+import BigIntHelper_v1._
+import BigIntHelper.vec
+import org.jgrapht.alg.interfaces.AStarAdmissibleHeuristic
+import org.jgrapht.alg.shortestpath.{AStarShortestPath, DijkstraShortestPath}
 import org.jgrapht.graph.{DefaultDirectedWeightedGraph, DefaultWeightedEdge}
 
+import scala.annotation.tailrec
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-val ex = ".graph"
+//val ex = ".graph"
+val ex = ".race"
 val inputRaw = read(s"day0$ex")
 
 // Scala string interpolation cannot handle escaped characters
 require(!inputRaw.contains("%"))
 val input = inputRaw.replace('"', '%')
 val lines = splitOn("\n")(input)
+
+
+type E = Char
 
 //type LINE = BigInt
 type LINE = Vector[Char]
@@ -56,41 +64,32 @@ println(s"#columns: $maxColumns")
 println(prime)
 //println(prime.sum)
 
-var grid = G(prime, maxColumns, '.')
+var grid = G(prime, maxColumns, '#').trim()
 
-val end = grid.find('E').get
-val start = grid.find('S').get
+val end = grid.findElement('E').get
+val start = grid.findElement('S').get
 
-//grid.log(Vector(P(0, 0), P(1, 1), P(2, 2)))
+//grid = grid.updated(end.y, end.x)('z')
+//grid = grid.updated(start.y, start.x)('a')
 
-grid = grid.updated(end.y, end.x)('z')
-grid = grid.updated(start.y, start.x)('a')
-
-println(grid.find('E'))
-println(grid.find('S'))
+grid = grid.updated(end.y, end.x)('.')
+grid = grid.updated(start.y, start.x)('.')
 
 grid.log(Vector(end, start))
 
 val directedGraph = new DefaultDirectedWeightedGraph[P, DefaultWeightedEdge](classOf[DefaultWeightedEdge])
 
-def neighbors(x: BigInt, y: BigInt): Unit = {
-  val level = grid(y, x)
+def neighbors(grid: G[E])(p: P): Unit = {
+  val e = grid.get(p).get
   vec(-1, 0, 1).foreach { dy =>
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
-        val np = P(x + dx, y + dy)
-        val levelNeighbor = grid.get(np)
-        //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor)")
-
-        levelNeighbor match {
-          case '.' => // skip
-            //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor) X.")
-          case nl if nl.toInt - level.toInt <= 1 =>
-            val ed = directedGraph.addEdge(P(x, y), np)
+        val pn = p.add(dy, dx)
+        grid.get(pn) match {
+          case Some(nl) if nl.toInt - e.toInt <= 1 =>
+            val ed = directedGraph.addEdge(p, pn)
             directedGraph.setEdgeWeight(ed, 1.0)
-            //println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor)")
-          case _ =>
-           // println(s"from $x,$y ($level) -> $nx,$ny ($levelNeighbor) X/")
+          case _ => // skip
         }
       }
     }
@@ -99,33 +98,125 @@ def neighbors(x: BigInt, y: BigInt): Unit = {
 
 println(grid)
 
+grid.foreachPoint { p =>
+  directedGraph.addVertex(p)
+}
+
+grid.foreachPoint { p =>
+  neighbors(grid)(p)
+}
+
+/*
 Range(0, grid.shape(0).toInt).foreach { y =>
   Range(0, grid.shape(1).toInt).foreach { x =>
-    directedGraph.addVertex(P(x, y))
+
   }
 }
 
 Range(0, grid.shape(0).toInt).foreach { y =>
   Range(0, grid.shape(1).toInt).foreach { x =>
-    neighbors(x, y)
+    neighbors(P(x, y))
+  }
+}
+*/
+
+val h = new AStarAdmissibleHeuristic[P]() {
+  override def getCostEstimate(a: P, b: P): Double = {
+    a.manhattan(b).toDouble
   }
 }
 
-val dijkstraAlg = new DijkstraShortestPath(directedGraph)
-val p = dijkstraAlg.getPath(start, end)
-if (p != null) {
-  println(p.getLength)
-  val pa = p.getVertexList.asScala.toVector
-  grid.log(pa)
+val dijkstra = new AStarShortestPath(directedGraph, h)
+//val dijkstra = new DijkstraShortestPath(directedGraph)
+
+Option(dijkstra.getPath(start, end)).foreach { path =>
+  println(s"Path(length=${path.getLength},weight=${path.getWeight})")
+  val pa = path.getVertexList.asScala.toVector
+  grid.logWithColors(pa.toSet)
 }
 
-val d = grid.findAll('a').map { a =>
-  val p = dijkstraAlg.getPath(a, end)
-  if (p != null) {
-    Some(p.getLength)
-  } else {
-    None
-  }
-}.filter(_.isDefined).map(_.get).min
+var length = Option.empty[BigInt]
+var weight = Option.empty[Double]
 
-println(d)
+
+var shortMap = Map.empty[P, BigInt]
+
+//grid.findAll('a').foreach { a =>
+grid.findAll('.').foreach { a =>
+  Option(dijkstra.getPath(a, end)).foreach { path =>
+    println(s"Path(length=${path.getLength},weight=${path.getWeight})")
+    //val pa = path.getVertexList.asScala.toVector
+    length = length.orElse(Some(path.getLength))
+    length = length.map(l => l.min(path.getLength))
+
+    weight = weight.orElse(Some(path.getWeight))
+    weight = weight.map(w => Math.min(w, path.getWeight))
+
+    shortMap = shortMap.updated(a, path.getWeight.toInt)
+  }
+}
+
+println(s"MinimumPath(length=$length,weight=$weight)")
+
+val max = shortMap.maxByOption(_._2)
+max.foreach { m =>
+  shortMap = shortMap.map(e => e._1 -> (m._2 - e._2))
+}
+
+
+@tailrec
+def bfs(filter: P => Boolean)(nxt: Vector[P], done: Map[P, BigInt], bound: Option[BigInt] = None): Map[P, BigInt] = {
+  //println(s"bfs(nxt=${nxt.take(5)}...,done=${done.take(5)}...,bound=$bound)")
+  if (nxt.isEmpty) return done
+  val p = nxt.head
+  require(done.contains(p))
+  var nxtPrime = nxt.drop(1)
+  val step = done(p)
+
+  var donePrime = done
+  if (bound.isEmpty || step + 1 < bound.get) {
+    vec(-1, 0, 1).foreach { dy =>
+      vec(-1, 0, 1).foreach { dx =>
+        if (dy.abs != dx.abs) {
+          val n = p.add(dy, dx)
+          if (!donePrime.contains(n) && filter(n)) {
+            nxtPrime = nxtPrime :+ n
+            donePrime = donePrime.updated(n, step + 1)
+          }
+        }
+      }
+    }
+  }
+
+  bfs(filter)(nxtPrime, donePrime, bound)
+}
+
+
+def dfs(filter: P => Boolean)(p: P, done: Set[P] = Set.empty): Set[P] = {
+
+  var current = done + p
+
+  vec(-1, 0, 1).foreach { dy =>
+    vec(-1, 0, 1).foreach { dx =>
+      if (dy.abs != dx.abs) {
+        val n = p.add(dy, dx)
+        if (!current.contains(n) && filter(n)) {
+          current = dfs(filter)(n, current)
+        }
+      }
+    }
+  }
+
+  current
+}
+
+
+val flooded = bfs(grid.contains)(Vector(start), Map(start -> 0))
+val circle = bfs(grid.isInBounds)(Vector(end), Map(end -> 0), Some(10))
+
+grid.logWithColors(flooded.keySet, circle.keySet)
+
+println(flooded)
+println(shortMap)
+
+require(flooded == shortMap)

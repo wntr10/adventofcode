@@ -68,7 +68,7 @@ set.foreach { s =>
   for (y <- 0 until (s.shape(0).toInt - 3)) {
     for (x <- 0 until (s.shape(1).toInt - 20)) {
       val window = s.slice(R(y, y + 3), R(x, x + 20)).trim()
-      if ((mg && window) == mg) {
+      if (mg.and(window)== mg) {
         c ++= mg.delegate.keySet.map(k => k.add(y, x))
       }
     }

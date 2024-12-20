@@ -90,14 +90,14 @@ def move(o: P, d: Char): P = {
 }
 
 def swap(from: P, to: P): Unit = {
-  val tmp = grid.get(to)
-  grid = grid.updated(to.y, to.x)(grid.get(from))
+  val tmp = grid.getOrElseZero(to)
+  grid = grid.updated(to.y, to.x)(grid.getOrElseZero(from))
   grid = grid.updated(from.y, from.x)(tmp)
 }
 
 def pushLookahead(o: P, d: Char): Boolean = {
   val lookahead = move(o, d)
-  val lc = grid.get(lookahead)
+  val lc = grid.getOrElseZero(lookahead)
   (lc, d) match {
     case ('.', _) =>
       true
@@ -116,7 +116,7 @@ def pushLookahead(o: P, d: Char): Boolean = {
 
 def push(o: P, d: Char): Boolean = {
   val lookahead = move(o, d)
-  val lc = grid.get(lookahead)
+  val lc = grid.getOrElseZero(lookahead)
   (lc, d) match {
     case ('#', _) =>
       false
@@ -161,7 +161,7 @@ def push(o: P, d: Char): Boolean = {
 }
 
 moves.foreach { m =>
-  val pos = grid.find('@').get
+  val pos = grid.findElement('@').get
   push(pos, m)
 }
 

@@ -57,7 +57,7 @@ def resourceValue(grid: G[Char]): Int = {
 
 def ctx(grid: G[Char])(ns: Set[P]): (Int, Int, Int) = {
   // .toList since we need to count
-  val mm = ns.toList.map(p => grid.get(p))
+  val mm = ns.toList.map(p => grid.getOrElseZero(p))
   val o = mm.count(p => p == '.')
   val t = mm.count(p => p == '|')
   val l = mm.count(p => p == '#')

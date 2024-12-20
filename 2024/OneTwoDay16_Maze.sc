@@ -37,8 +37,8 @@ require(countRest == 0)
 
 var grid = G(prime, maxColumns, '.')
 
-val end = grid.find('E').get
-val start = grid.find('S').get
+val end = grid.findElement('E').get
+val start = grid.findElement('S').get
 
 grid = grid.updated(end.y, end.x)('.')
 grid = grid.updated(start.y, start.x)('.')
@@ -143,7 +143,7 @@ def short(to: P)(from: P): Option[(Set[P], BigInt)] = {
           case 3 => cp.copy(y = cp.y - 1)
         }
 
-        if (grid.get(norm(np)) == '.') {
+        if (grid.getOrElseZero(norm(np)) == '.') {
           b = b.merge(cp, cc + 1, np)
         }
       case (_, _) =>

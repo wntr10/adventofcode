@@ -83,27 +83,52 @@ final case class P(x: BigInt = 0,
     case Seq(ow, oz, oy, ox) => P(x = x + ox, y = y + oy, z = z + oz, w = w + ow)
   }
 
+  def manhattan(other: P): BigInt = {
+    (other.w - w).abs + (other.z - z).abs + (other.y - y).abs + (other.x - x).abs
+  }
+
 }
 
-final case class G[T](delegate: Map[P, T],
+final case class G[E](delegate: Map[P, E],
                       shape: Vector[BigInt],
-                      zero: T) {
+                      zero: E) {
 
   // forwards
+
   def size: Int = delegate.size
 
-  def find(e: T): Option[P] = delegate.find(_._2 == e).map(_._1)
+  def foreach(f: ((P, E)) => Unit): Unit = delegate.foreach(f)
 
-  def get(p: P): T = delegate.getOrElse(p, zero)
+  def foreachPoint(f: P => Unit): Unit = delegate.foreach(l => f(l._1))
 
-  def map(f: T => T): G[T] = {
+  def findElement(e: E): Option[P] = delegate.find(_._2 == e).map(_._1)
+
+  def contains(p: P): Boolean = delegate.contains(p)
+
+  def get(p: P): Option[E] = delegate.get(p)
+
+  def getOrElseZero(p: P): E = delegate.getOrElse(p, zero)
+
+  def mapElement(f: E => E): G[E] = {
     val prime = delegate.map { e =>
       e._1 -> f(e._2)
     }
     copy(delegate = prime)
   }
 
+  def removedAll(other: G[E]): G[E] = {
+    this.copy(delegate = delegate.removedAll(other.delegate.keys))
+  }
+
+  // alias
+
+  def not(other: G[E]) = removedAll(other)
+
   //
+
+  def cropped(): G[E] = {
+    copy(delegate = delegate.filter(isInBounds))
+  }
 
   def isVector: Boolean = {
     if (shape.size != 2) return false
@@ -175,7 +200,7 @@ final case class G[T](delegate: Map[P, T],
     }
   }
 
-  def apply(p: BigInt*): T = {
+  def apply(p: BigInt*): E = {
     delegate.getOrElse(of(adapt(p): _*), zero)
   }
 
@@ -200,7 +225,7 @@ final case class G[T](delegate: Map[P, T],
       while (cx < upperX) {
         if (idx.nonEmpty) {
           val point = of(cy, cx)
-          var str = fansi.Str(get(point).toString)
+          var str = fansi.Str(apply(cy, cx).toString)
           idx.foreach { c =>
             if (c._1.contains(point)) {
               str = str.overlay(c._2)
@@ -218,24 +243,22 @@ final case class G[T](delegate: Map[P, T],
     result
   }
 
-  def invertX(): G[T] = {
+  def invertX(): G[E] = {
     require(shape.size == 2)
     if (shape(1) == 0) return this
-    var prime = delegate.filter(e => isInBounds(e._1))
     val maxX = shape(1) - 1
-    prime = prime.map { e =>
+    val prime = delegate.map { e =>
       (e._1.copy(x = maxX - e._1.x), e._2)
     }
     copy(delegate = prime)
   }
 
 
-  def invertY(): G[T] = {
+  def invertY(): G[E] = {
     require(shape.size == 2)
     if (shape(0) == 0) return this
-    var prime = delegate.filter(e => isInBounds(e._1))
     val maxY = shape(0) - 1
-    prime = prime.map { e =>
+    val prime = delegate.map { e =>
       (e._1.copy(y = maxY - e._1.y), e._2)
     }
     copy(delegate = prime)
@@ -245,52 +268,73 @@ final case class G[T](delegate: Map[P, T],
     v.updated(a, v(b)).updated(b, v(a))
   }
 
-  def swapXY(): G[T] = {
+  def swapXY(): G[E] = {
     require(shape.size == 2)
-    var prime = delegate.filter(e => isInBounds(e._1))
-    prime = prime.map { e =>
+    val prime = delegate.map { e =>
       (e._1.copy(x = e._1.y, y = e._1.x), e._2)
     }
     copy(delegate = prime, shape = swap(shape, 0, 1))
   }
 
-  def rotate(): G[T] = {
+  private def rotate(): G[E] = {
     require(shape.size == 2)
-    var prime = delegate.filter(e => isInBounds(e._1))
-    prime = prime.map { e =>
+    val prime = delegate.map { e =>
       (e._1.copy(x = e._1.y, y = e._1.x), e._2)
     }
     copy(delegate = prime)
   }
 
-  def minus(other: G[T]): G[T] = {
-    this.copy(delegate = delegate.filter(e => !other.delegate.contains(e._1)))
-  }
-
-  def ||(other: G[T]): G[T] = {
-    var prime = delegate
-    other.delegate.foreach {
-      case p -> v =>
-        prime = prime.updated(p, v)
+  def or(grids: (G[E], G[E])): G[E] = {
+    val (a, b) = if (grids._1.size >= grids._2.size) {
+      grids
+    } else {
+      grids.swap
     }
-    this.copy(delegate = prime, shape = shape.zip(other.shape).map(s => s._1.max(s._2)))
+
+    def remapping(e: E)(current: Option[E]): Option[E] = {
+      if (current.isEmpty) {
+        Some(e)
+      } else {
+        current
+      }
+    }
+
+    var prime = a.delegate
+    b.delegate.foreach {
+      case p -> v =>
+        prime = prime.updatedWith(p)(remapping(v))
+    }
+    a.copy(delegate = prime, shape = a.shape.zip(b.shape).map(s => s._1.max(s._2)))
   }
 
-  def &&(other: G[T]): G[T] = {
-    var prime = Map.empty[P, T]
-    other.delegate.foreach {
-      case p -> v if delegate.contains(p) =>
-        prime = prime.updated(p, v)
+
+  def or(other: G[E]): G[E] = or((this, other))
+
+  private def and(grids: (G[E], G[E])): G[E] = {
+    val (a, b, ab) = if (grids._1.size <= grids._2.size) {
+      (grids._1, grids._2, true)
+    } else {
+      (grids._2, grids._1, false)
+    }
+
+    var prime = Map.empty[P, E]
+    a.delegate.foreach {
+      case p -> v =>
+        b.delegate.get(p).foreach { eb =>
+          prime = prime.updated(p, if (ab) v else eb)
+        }
       case _ => // skip
     }
-    this.copy(delegate = prime, shape = shape.zip(other.shape).map(s => s._1.min(s._2)))
+    this.copy(delegate = prime, shape = a.shape.zip(b.shape).map(s => s._1.min(s._2)))
   }
 
-  def fill(): G[T] = {
+  def and(other: G[E]): G[E] = and((this, other))
+
+  def fill(): G[E] = {
     fill(zero)
   }
 
-  def fill(e: T): G[T] = {
+  def fill(e: E): G[E] = {
     var prime = delegate
     val minX = BigInt(0)
     val minY = BigInt(0)
@@ -312,13 +356,15 @@ final case class G[T](delegate: Map[P, T],
     this.copy(delegate = prime)
   }
 
-  def updated(p: BigInt*)(v: T): G[T] = {
+  def updated(p: BigInt*)(v: E): G[E] = {
     this.copy(delegate = delegate.updated(of(adapt(p): _*), v))
   }
 
-  def trim(): G[T] = this.copy(delegate = delegate.filter(e => e._2 != zero))
+  def trim(): G[E] = this.copy(delegate = delegate.filter(e => e._2 != zero))
 
-  def clear: G[T] = this.copy(delegate = Map.empty)
+  def clear: G[E] = this.copy(delegate = Map.empty)
+
+  def isInBounds(l: (P, E)): Boolean = isInBounds(l._1)
 
   def isInBounds(p: P): Boolean = isInBounds(p.y, p.x)
 
@@ -329,7 +375,7 @@ final case class G[T](delegate: Map[P, T],
     }
   }
 
-  def concatenate(other: G[T], axis: Int = 0): G[T] = {
+  def concatenate(other: G[E], axis: Int = 0): G[E] = {
     val shapePrime = shape.zip(other.shape).zipWithIndex.map {
       case ((a, b), i) if i == axis =>
         a + b
@@ -349,7 +395,7 @@ final case class G[T](delegate: Map[P, T],
     rs.reverse.zipWithIndex.forall(r => r._1.contains(p.component(r._2)))
   }
 
-  def slice(p: R*): G[T] = {
+  def slice(p: R*): G[E] = {
     val pLimited = p.zipWithIndex.map {
       case (r, i) =>
         R(0, shape(i)).intersection(r).getOrElse(R(0, 0))
@@ -369,8 +415,7 @@ final case class G[T](delegate: Map[P, T],
     this.copy(delegate = prime, shape = shapePrime)
   }
 
-
-  def findAll(e: T): Vector[P] = {
+  def findAll(e: E): Vector[P] = {
     delegate.filter(me => me._2 == e).keys.toVector
   }
 }

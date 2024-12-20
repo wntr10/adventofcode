@@ -9,7 +9,7 @@ import Grid_v3._
   var g = o
   val g6 = G.empty(vec(2, 5), '%').fill()
   val g2 = G.empty(vec(2, 2), '$')
-  val g3 = g || g2.fill()
+  val g3 = g.or(g2.fill())
   println(g)
   g.log()
   g = g.updated(1)('#')

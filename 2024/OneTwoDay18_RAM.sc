@@ -50,7 +50,7 @@ def test(grid: G[Char]): Option[Int] = {
       vec(-1, 0, 1).foreach { dx =>
         if (dy.abs != dx.abs) {
           val np = P(x + dx, y + dy)
-          grid.get(np) match {
+          grid.getOrElseZero(np) match {
             case '.' if grid.isInBounds(np) =>
               val ed = directedGraph.addEdge(P(x, y), np)
               directedGraph.setEdgeWeight(ed, 1.0)

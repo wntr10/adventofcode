@@ -78,11 +78,11 @@ def rotate(c: Char): Char = {
 }
 
 def gInv(g: G[Char]): G[Char] = {
-  g.invertY().map(invertY)
+  g.invertY().mapElement(invertY)
 }
 
 def gRot(g: G[Char]): G[Char] = {
-  g.invertY().swapXY().map(rotate)
+  g.invertY().swapXY().mapElement(rotate)
 }
 
 def invSwap(): Set[G[Char]] = {

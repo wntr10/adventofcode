@@ -52,17 +52,16 @@ def check(str: String): BigInt = {
   while (rest.nonEmpty) {
     var prime = Map.empty[String, BigInt]
     rest.foreach { r =>
-      pattern.foreach { p =>
-        val isPrefix = r._1.startsWith(p)
-        if (isPrefix) {
+      pattern.foreach {
+        case p if r._1.startsWith(p) =>
           r._1.drop(p.length) match {
             case "" =>
-              cn = cn + r._2
+              cn += r._2
             case n =>
               val cc = prime.getOrElse(n, BigInt(0))
               prime = prime.updated(n, cc + r._2)
           }
-        }
+        case _ =>
       }
     }
     rest = prime.toSet

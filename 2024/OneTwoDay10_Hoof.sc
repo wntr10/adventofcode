@@ -46,7 +46,7 @@ def neighbors(x: BigInt, y: BigInt): Set[P] = {
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
         val np = P(x + dx, y + dy)
-        val levelNeighbor = grid.get(np)
+        val levelNeighbor = grid.getOrElseZero(np)
 
         levelNeighbor match {
           case '.' =>
@@ -73,7 +73,7 @@ def hasPath(s: P, e: P): Boolean = {
 }
 
 def search(s: P): Int = {
-  if (grid.get(s) == '9') {
+  if (grid.getOrElseZero(s) == '9') {
     return 1
   }
   var score = 0

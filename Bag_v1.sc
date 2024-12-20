@@ -13,6 +13,10 @@ final class Bag[T](val delegate: Map[T, BigInt]) {
     delegate.values
   }
 
+  def sum(): BigInt = {
+    delegate.values.sum
+  }
+
   def sumBy(pred: T => Boolean): BigInt = {
     delegate.filter(e => pred(e._1)).values.sum
   }

@@ -1,4 +1,3 @@
-import $ivy.`com.google.guava:guava:33.3.1-jre`
 import $file.^.Basic, Basic._, Input._
 import $file.^.Grid_v3, Grid_v3._
 

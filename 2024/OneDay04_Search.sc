@@ -48,7 +48,7 @@ def run(): Seq[Set[P]] = {
   def search(p: P, dx: BigInt, dy: BigInt, str: Vector[Char], trace: Set[P] = Set.empty): Set[P] = {
     if (!grid.isInBounds(p) || str.isEmpty) return Set.empty
 
-    val c = grid.get(p)
+    val c = grid.get(p).get
     str match {
       case h +: _ if h != c =>
         Set.empty

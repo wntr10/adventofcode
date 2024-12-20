@@ -43,7 +43,7 @@ def flood(p: P, c: Char, done: Set[P] = Set.empty): Set[P] = {
     vec(-1, 0, 1).foreach { dx =>
       if (dy.abs != dx.abs) {
         val n = p.add(dy, dx)
-        if (!current.contains(n) && grid.get(n) == c) {
+        if (!current.contains(n) && grid.getOrElseZero(n) == c) {
           current = flood(n, c, current)
         }
       }
@@ -165,7 +165,7 @@ require(grid.delegate.keySet.size == (grid.shape(0) * grid.shape(1)))
 
 grid.delegate.keySet.foreach { k =>
   if (!all.contains(k)) {
-    val r = flood(k, grid.get(k))
+    val r = flood(k, grid.getOrElseZero(k))
     all ++= r
     regions += r
   }
