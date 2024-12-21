@@ -24,6 +24,19 @@ object Input {
       .toList
 
   }
+
+  def splitEndsWith(ends: String)(str: String) = {
+    require(str.trim.endsWith(ends))
+    splitWithEmpty(ends, str).dropRight(1).map(_ + ends).toVector
+  }
+
+  private def splitWithEmpty(on: String, str: String) = {
+    Splitter
+      .on(on)
+      .trimResults()
+      .splitToList(str)
+      .asScala
+  }
 }
 
 def cycle(list: List[Int]): Iterator[Int] = {
