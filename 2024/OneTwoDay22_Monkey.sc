@@ -1,4 +1,8 @@
-import $file.^.Basic, Basic._, Input._
+import $file.^.Basic
+import Basic._
+import Input._
+
+import scala.annotation.tailrec
 
 //val ex = ".ex0" // 37327623; 24
 val ex = ".ex1" // 37990510; 23
@@ -29,84 +33,47 @@ lines.zipWithIndex.foreach {
 
 require(countRest == 0)
 
-def mixAndPrune(secret: BigInt, b: BigInt): BigInt = {
-  (secret ^ b) & 16777215 // %16777216
+def mixAndPrune(s: BigInt, b: BigInt) = (s ^ b) % 16777216
+def price(s: BigInt) = (s % 10).toInt
+
+def generate(_n: BigInt): BigInt = {
+  var n = _n
+  n = mixAndPrune(n, n * 64)
+  n = mixAndPrune(n, n / 32)
+  mixAndPrune(n, n * 2048)
 }
 
-def price(secret: BigInt): Int = {
-  secret.toString().last.toString.toInt
-}
-
-def generate(n: BigInt): BigInt = {
-  var cn = n
-  cn = mixAndPrune(cn, cn << 6) // *64
-  cn = mixAndPrune(cn, cn >> 5) // /32
-  mixAndPrune(cn, cn << 11) // *2048
-}
-
-def generate(n: BigInt, times: Int): Vector[BigInt] = {
-  var cn = Vector(n)
-  Range(0, times).foreach { _ =>
-    cn = cn :+ generate(cn.last)
+@tailrec
+def generate(times: Int)(n: BigInt): BigInt = {
+  times match {
+    case 0 => n
+    case _ => generate(times - 1)(generate(n))
   }
-  cn
 }
 
-def changes(n: BigInt, times: Int): Vector[Int] = {
-  var cn = n
-  var last = price(cn)
-  var changes = Vector.empty[Int]
+// replaced my solution with the one of steffenmaus
+
+var map = Map.empty[Vector[Int], Vector[Int]]
+
+def changes(times: Int)(_n: BigInt): Unit = {
+  var n = _n
+  var last = price(n)
+  var set = Set.empty[Vector[Int]]
+  var w = Vector.empty[Int]
   Range(0, times).foreach { _ =>
-    cn = generate(cn)
-    val p = price(cn)
-    val change = p - last
+    n = generate(n)
+    val p = price(n)
+    w = w :+ (p - last)
     last = p
-    changes = changes :+ change
-  }
-  require(changes.length == times)
-  changes
-}
-
-def bananas(n: BigInt, all: String, sequence: String): Int = {
-  val i = all.indexOf(sequence)
-  if (i == -1) {
-    0
-  } else {
-    var p = price(n)
-    all.slice(0, i + 4).foreach { s =>
-      p += (s - 9 - 'a')
-    }
-    p
-  }
-}
-
-var sumPartOne = BigInt(0)
-prime.foreach { init =>
-  val secret2000 = generate(init, 2000).last
-  sumPartOne += secret2000
-}
-
-println(sumPartOne)
-println("...")
-
-val indices = prime.indices
-val cl = prime.map(l => changes(l, 2000).map(c => (c + 9 + 'a').toChar).mkString)
-
-var max = 0
-
-Range.inclusive('a', 's').foreach { a =>
-  Range.inclusive('a', 's').foreach { b =>
-    Range.inclusive('a', 's').foreach { c =>
-      Range.inclusive('a', 's').foreach { d =>
-        val s = a.toChar.toString + b.toChar + c.toChar + d.toChar
-        var sum = 0
-        indices.foreach { i =>
-          sum = sum + bananas(prime(i), cl(i), s)
-        }
-        max = max.max(sum)
-      }
+    w = w.drop(w.size - 4)
+    if (w.size == 4 && !set.contains(w)) {
+      set += w
+      val me = map.getOrElse(w, Vector.empty)
+      map = map.updated(w, me :+ p)
     }
   }
 }
 
-println(max)
+println(prime.map(generate(2000)).sum)
+prime.foreach(changes(2000))
+println(map.map(_._2.sum).max)
