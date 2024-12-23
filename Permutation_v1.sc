@@ -1,6 +1,23 @@
 
 object Permutation {
 
+  def bronKerbosch[T](visit: Set[T] => Unit, neighborSet: T => Set[T])
+                     (r: Set[T], _p: Set[T], _x: Set[T]): Unit = {
+
+    if (_p.isEmpty && _x.isEmpty) {
+      visit(r)
+    } else {
+      var p = _p
+      var x = _x
+      p.foreach { v =>
+        val n = neighborSet(v)
+        bronKerbosch(visit, neighborSet)(r + v, p.intersect(n), x.intersect(n))
+        p -= v
+        x += v
+      }
+    }
+  }
+
   def subSets[T](visit: Set[T] => Unit)
                 (master: Set[T], x: Set[T]): Unit = {
 
