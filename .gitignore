@@ -42,6 +42,7 @@ target/
 /.metadata/
 
 # Other
+*.graphml
 tmp
 *-local.*
 *-local

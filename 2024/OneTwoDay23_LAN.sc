@@ -61,9 +61,9 @@ def subSets(visit: Set[String] => Unit)
   } else if (p.nonEmpty) {
     val pick = p.head
     if (r.forall(connected(pick)) && (r.size != 2 || (r + pick).exists(_.startsWith("t")))) {
-      subSets(visit)(p.drop(1), r + pick)
+      subSets(visit)(r + pick, p.drop(1))
     }
-    subSets(visit)(p.drop(1), r)
+    subSets(visit)(r, p.drop(1))
   }
 }
 

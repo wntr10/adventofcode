@@ -81,11 +81,12 @@ def factorial(n: BigInt): BigInt = {
   fac(n, 1)
 }
 
-def pad(v: BigInt, len: BigInt = 4): String = {
-  val str = v.toString()
+def pad(str: String, len: BigInt): String = {
   val missing = (len - str.length).max(0)
   "0".repeat(missing.toInt) + str
 }
+
+def pad(v: BigInt, len: BigInt = 4): String = pad(v.toString, len)
 
 @tailrec
 def fac(n: BigInt, acc: BigInt): BigInt = {
