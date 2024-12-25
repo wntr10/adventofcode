@@ -276,14 +276,6 @@ final case class G[E](delegate: Map[P, E],
     copy(delegate = prime, shape = swap(shape, 0, 1))
   }
 
-  private def rotate(): G[E] = {
-    require(shape.size == 2)
-    val prime = delegate.map { e =>
-      (e._1.copy(x = e._1.y, y = e._1.x), e._2)
-    }
-    copy(delegate = prime)
-  }
-
   def or(grids: (G[E], G[E])): G[E] = {
     val (a, b) = if (grids._1.size >= grids._2.size) {
       grids
